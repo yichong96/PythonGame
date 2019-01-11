@@ -69,33 +69,10 @@ class Player(pygame.sprite.Sprite):
         self.isNextStage = self.isCollided_with_portal(portal)
 
     def move(self, collidable, event = None):
-        # if not (event == None):
-        #     if (event.type == pygame.KEYDOWN):
-        #         if(event.key == pygame.K_LEFT):
-        #             self.hSpeed = -self.speed
-
-        #         if (event.key == pygame.K_RIGHT):
-        #             self.hSpeed = self.speed
-
-        #         if (event.key == pygame.K_UP):
-        #             self.vSpeed = -self.speed
-
-        #         if (event.key == pygame.K_DOWN):
-        #             self.vSpeed = self.speed
-
-        #     if (event.type == pygame.KEYUP):
-        #         if (event.key == pygame.K_LEFT):
-        #             if (self.hSpeed < 0): self.hSpeed = 0
-        #         if (event.key == pygame.K_RIGHT):
-        #             if (self.hSpeed > 0): self.hSpeed = 0
-        #         if (event.key == pygame.K_UP):
-        #             if (self.vSpeed < 0): self.vSpeed = 0
-        #         if (event.key == pygame.K_DOWN):
-                    # if (self.vSpeed > 0): self.vSpeed = 0
-        
         keys = pygame.key.get_pressed()
         if(keys[pygame.K_LEFT]):
             self.hSpeed = -self.speed
+            # self.image = spriteLists[]
 
         elif (keys[pygame.K_RIGHT]):
             self.hSpeed = self.speed
@@ -112,6 +89,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.vSpeed = 0
 
+    
         self.isCollided(collidable)       
         
     def isCollided(self, collidable):
@@ -292,7 +270,7 @@ class MiniMap(object):
         super().__init__()
         # self.image = pygame.image.load('wall.png')
 
-        self.width, self.height = 150, 150
+        self.width, self.height = 170, 170
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill((255,255,255))
 
@@ -300,9 +278,20 @@ class MiniMap(object):
 
         self.rect.x = win_width - self.width
         self.rect.y = win_height - self.height
-
+    
     def draw(self, window):
         window.blit(self.image,(self.rect.x, self.rect.y))
+
+class MiniWall(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+
+        self.image = pygame.image.load('miniWall.png')
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
 
 class Fog(pygame.sprite.Sprite):
     def __init__(self):
@@ -319,10 +308,9 @@ class Fog(pygame.sprite.Sprite):
         self.rect.centerx = player_x + 32
         self.rect.centery = player_y + 32
 
-
 def create_instances():
-    global current_level, running, player, player_group, miniMap, fog_group,\
-           walls_group, enemies_group, treasures_group, portal_group
+    global current_level, running, player, player_group, miniMap, miniWalls_group, fog_group
+    global walls_group, enemies_group, treasures_group, portal_group
     global win_width, win_height
 
     current_level = 0
@@ -336,11 +324,13 @@ def create_instances():
     enemies_group = pygame.sprite.Group()
     treasures_group = pygame.sprite.Group()
     portal_group = pygame.sprite.Group()
+    miniWalls_group = pygame.sprite.Group()
 
     fog_group = pygame.sprite.Group()
     fog_group.add(Fog())
 
     miniMap = MiniMap(win_width, win_height)
+
 
 def run_viewbox(player_x, player_y):
     global player, walls_Group, enemies_Group, treasures_group, portal_group
@@ -382,51 +372,172 @@ def run_viewbox(player_x, player_y):
 def define_maze():
     global levels
     level_1 = [
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXX EXXX XXXXX XX  XXXXXXXXX",
-    "XXXXX EXXX XXXXE XX  XXXXXXXXX",
-    "XXXXXTTXXX XXXX  XX     TXXXXX",
-    "XXXXXP       XX  XX      XXXXX",
-    "XXXXXU       XX  XX  XXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXX  XX  XX",
-    "XXXXXXX   XXXXXT        XX  XX",
-    "XXXXXXX   XXXXX         XX TXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXX EXXX XXXXX XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXX EXXX XXXXE XX  XXXXXX    XXXXXXXXXXXXXXXXXXX",
+    "XXXXXTTXXX XXXX  XX     TXX    XXXXXXXXXXXXXXXXXXX",
+    "XXXXXP       XX  XX      XX    XXXXXXXXXXXXXXXXXXX",
+    "XXXXXU       XX  XX  XXXXXX    XXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXX  XX     XXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXT        XX     XXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXX         XX TX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",    
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XX XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     level_2 = [
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXT XXXXXXXT  XX         XXXXXXXXXXXXXXX",
-    "XXXXXX  XXXXXXX   XX         XXXXXXXXXXXXXXX",
-    "XXXXXX        XX  XX   XXXX  XXXXXXXXXXXXXXX",
-    "XXXXXXXXXXX   XX  XX   XXXX  XXXXXXXXXXXXXXX",
-    "XXXXXXP XXX   XX  XX   XXXX TXXXXXXXXXXXXXXX",
-    "XXXXXX   U    XX  XX   XXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXX  T  E                 XXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXX                 XXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX      XXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX         XXXXXXXXXX",
+    "XXXXXXT XXXXXXXT  XX               XXXXXXXXXXXXXXX",
+    "XXXXXX  XXXXXXX   XX               XXXXXXXXXXXXXXX",
+    "XXXXXX        XX  XX   XXXX        XXXXXXXXXXXXXXX",
+    "XXXXXXXXXXX   XX  XX   XXXX        XXXXXXXXXXXXXXX",
+    "XXXXXXP XXX   XX  XX   XXXX T      XXXXXXXXXXXXXXX",
+    "XXXXXX   U    XX  XX   XXXXXX      XXXXXXXXXXXXXXX",
+    "XXXXXX  T  E                       XXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXX                       XXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",    
+    "XXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                         XXXXXXXX",
+    "XXXXXXX   XXXXXXX                         XXXXXXXX",
+    "XXXXXXX   XXXXXXX                         XXXXXXXX",
+    "XXXXXXX   XXXXXXX                         XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX                XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX              XXXXX                XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX                XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX                XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX                XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX                XXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     level_3 = [
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXT XXXXXXXT  XX         XXXXXXXXXXXXXXX",
-    "XXXXXX  XXXXXXX   XX         XXXXXXXXXXXXXXX",
-    "XXXXXX        XX  XX   XXXX  XXXXXXXXXXXXXXX",
-    "XXXXXXXXXXX   XX  XX   XXXX  XXXXXXXXXXXXXXX",
-    "XXXXXX  XXX   XX  XX   XXXX TXXXXXXXXXXXXXXX",
-    "XXXXXX        XX  XX   XXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXX         T    P U      XXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXX       T    E    XXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXX      XXXXXXXXXXXXXXXXXX",
+    "XXXXXXT XXXXXXXT  XX               XXXXXXXXXXXXXXX",
+    "XXXXXX  XXXXXXX   XX               XXXXXXXXXXXXXXX",
+    "XXXXXX        XX  XX   XXX      X  XXXXXXXXXXXXXXX",
+    "XXXXXXXXXXX   XX  XX   XXX      X  XXXXXXXXXXXXXXX",
+    "XXXXXX  XXX   XX  XX   XXX      X TXXXXXXXXXXXXXXX",
+    "XXXXXX        XX  XX   XXX      XXXXXXXXXXXXXXXXXX",
+    "XXXXXX         T    P U            XXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXX       T    E          XXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",    
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX"
     ]    
 
     levels = [level_1, level_2, level_3]
 
 def setup_maze(current_level):
     global levels, player, walls_group, enemies_group, treasures_group, portal_group
+    global win_height, win_width
 
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
@@ -437,6 +548,7 @@ def setup_maze(current_level):
             if character == "X":
                 #Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
+                miniWalls_group.add(MiniWall(win_width - 160 + (x * 3), win_height - 160 + (y * 3)))
 
             elif character == "P":
                 player.set_position(pos_x, pos_y)
@@ -454,11 +566,12 @@ def setup_maze(current_level):
                 portal_group.add(Portal(pos_x, pos_y))
 
 def clear_maze():
-    global player, walls_group, enemies_group, treasures_group, portal_group
+    global player, walls_group, enemies_group, treasures_group, portal_group, miniWalls_group
     walls_group.empty()
     enemies_group.empty()
     treasures_group.empty()
     portal_group.empty()
+    miniWalls_group.empty()
 
     player.isNextStage = False
 
@@ -474,10 +587,14 @@ def nextStage(isNextStage):
 
 #Initialize Game
 #######################################################################################
+# bgDict = loadImageDict('image/backgrounds')
+# featureDict = loadImageDict('image/features')
+# spriteLists = loadImageListInDict('image/sprites')
 
 create_instances()
 define_maze()
 setup_maze(current_level)
+
 
 ################################################################################
 
@@ -506,8 +623,12 @@ while running:
     treasures_group.draw(window)
     player_group.draw(window)
     enemies_group.draw(window)
-    # fog_group.draw(window)
+    
+    if current_level >= 1:
+        fog_group.draw(window)
+
     miniMap.draw(window)
+    miniWalls_group.draw(window)
     
     # Delay & Update Screen
     clock.tick(fps)

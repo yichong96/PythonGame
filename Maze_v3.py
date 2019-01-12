@@ -19,7 +19,7 @@ numbers representing the width and height. The flags argument is a collection of
 The depth argument represents the number of bits to use for color.
 The Surface that gets returned can be drawn to like a regular Surface but changes will eventually be seen on the monitor.
 """
-window = pygame.display.set_mode(win_size, pygame.RESIZABLE)
+window = pygame.display.set_mode(win_size)
 
 
 # set_caption(title, icontitle=None) -> None
@@ -44,7 +44,7 @@ def loadImageListInDict(path):
             for image in os.listdir(subPath):
                 print(image)
                 if os.path.isfile(os.path.join(subPath,image)):
-                    listsDict[folder].append(pygame.image.load(os.path.join(subPath,image)))
+                    listsDict[folder].append(pygame.image.load(os.path.join(subPath,image)).convert_alpha())
 
     return listsDict
 
@@ -54,7 +54,7 @@ def loadImageInDict(path):
     for image in os.listdir(path):
         subPath = os.path.join(path, image)
         if os.path.isfile(subPath):
-            imageDict[os.path.splitext(image)[0]] = pygame.image.load(subPath)
+            imageDict[os.path.splitext(image)[0]] = pygame.image.load(subPath).convert_alpha()
     return imageDict
 
 def loadImageInList(path):
@@ -63,7 +63,7 @@ def loadImageInList(path):
     for image in os.listdir(path):
         subPath = os.path.join(path, image)
         if os.path.isfile(subPath):
-            imageList.append(pygame.image.load(subPath))
+            imageList.append(pygame.image.load(subPath).convert_alpha())
     return imageList
 
 # pygame.sprite.Sprite -> The base class for visible game objects
@@ -352,10 +352,10 @@ class Enemy(pygame.sprite.Sprite):
 
 class Wall(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, width = 64, height = 64):
+    def __init__(self, x, y, width = 32, height = 32):
 
         super().__init__()
-        self.image = pygame.image.load('wall.png')
+        self.image = pygame.image.load('wall_small.png').convert()
 
         # self.image = pygame.Surface((width, height))
         # self.image.fill((255,100,180))
@@ -374,7 +374,7 @@ class Treasure(pygame.sprite.Sprite):
     def __init__(self, x, y, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('Treasure.png')
+        self.image = pygame.image.load('Treasure.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -390,7 +390,7 @@ class Portal(pygame.sprite.Sprite):
     def __init__(self, x, y, imageList = None, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('portal.png')
+        self.image = pygame.image.load('portal.png').convert_alpha()
         self.imageList = imageList
         self.image = imageList[0]
         self.rect = self.image.get_rect()
@@ -415,7 +415,6 @@ class Portal(pygame.sprite.Sprite):
 class MiniMap(object):
     def __init__(self, win_width, win_height):
         super().__init__()
-        # self.image = pygame.image.load('wall.png')
 
         self.width, self.height = 170, 170
         self.image = pygame.Surface((self.width, self.height))
@@ -434,7 +433,7 @@ class MiniWall(pygame.sprite.Sprite):
 
         super().__init__()
 
-        self.image = pygame.image.load('miniWall.png')
+        self.image = pygame.image.load('miniWall.png').convert()
 
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -445,14 +444,14 @@ class MiniPlayer (object):
 
         super().__init__()
 
-        self.image = pygame.image.load('images/features/miniPlayer.png')
+        self.image = pygame.image.load('images/features/miniPlayer.png').convert_alpha()
         self.rect = self.image.get_rect()
         self.win_width = win_width
         self.win_height = win_height
 
     def update(self, player_abs_x, player_abs_y):
-        mini_x = 150 / (64 * 50) * player_abs_x
-        mini_y = 150 / (64 * 50) * player_abs_y
+        mini_x = 150 / (32 * 50) * player_abs_x
+        mini_y = 150 / (32 * 50) * player_abs_y
         
         self.rect.x = self.win_width - 160 + mini_x
         self.rect.y = self.win_height - 160 + mini_y
@@ -464,7 +463,7 @@ class Fog(pygame.sprite.Sprite):
     def __init__(self):
 
         super().__init__()
-        self.image = pygame.image.load('fog.png')
+        self.image = pygame.image.load('fog.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -505,19 +504,19 @@ def run_viewbox(player_x, player_y):
     bottom_viewbox = win_height/2 + win_height/8
     dx, dy = 0, 0
 
-    if(player_x < left_viewbox):
+    if(player_x <= left_viewbox):
         dx = left_viewbox - player_x
         player.set_position(left_viewbox, player.rect.y)
 
-    elif(player_x > right_viewbox):
+    elif(player_x >= right_viewbox):
         dx = right_viewbox - player_x
         player.set_position(right_viewbox, player.rect.y)
 
-    if(player_y < top_viewbox):
+    if(player_y <= top_viewbox):
         dy = top_viewbox - player_y
         player.set_position(player.rect.x, top_viewbox)
 
-    elif(player_y > bottom_viewbox):
+    elif(player_y >= bottom_viewbox):
         dy = bottom_viewbox - player_y
         player.set_position(player.rect.x, bottom_viewbox)
 
@@ -707,8 +706,8 @@ def setup_maze(current_level):
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
             character = levels[current_level][y][x]
-            pos_x = (x*64)
-            pos_y = (y*64)
+            pos_x = (x*32)
+            pos_y = (y*32)
 
             if character == "X":
                 #Update wall coordinates
@@ -761,7 +760,6 @@ ratImageLists = loadImageListInDict('images/rat')
 chefImageLists = loadImageListInDict('images/chef')
 
 portalList = loadImageInList('images/portal')
-
 
 # Initialise the maze
 create_instances()
@@ -827,7 +825,7 @@ while running:
     miniPlayer.draw(window)
 
     # Delay & Update Screen
-    clock.tick(fps)
     pygame.display.update()
+    clock.tick(fps)
 
 pygame.quit()

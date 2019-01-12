@@ -40,10 +40,12 @@ def loadImageListInDict(path):
         subPath = os.path.join(path, folder)
         if os.path.isdir(subPath):
             listsDict[folder] = []
+            print(subPath)
             for image in os.listdir(subPath):
+                print(image)
                 if os.path.isfile(os.path.join(subPath,image)):
-                    listsDict[folder].append(pygame.image.load(os.path.join(subPath,image))) 
-            
+                    listsDict[folder].append(pygame.image.load(os.path.join(subPath,image)))
+
     return listsDict
 
 def loadImageInDict(path):
@@ -77,7 +79,7 @@ class Player(pygame.sprite.Sprite):
 
         # fetch rectangle object that has dimension of the image
         self.rect = self.image.get_rect()
-        
+
         self.hSpeed = 0
         self.vSpeed = 0
         self.speed = 5
@@ -85,14 +87,14 @@ class Player(pygame.sprite.Sprite):
         self.isNextStage = False
         self.walkCount = 0
         self.direction = 'S'
-    
+
     def set_position(self, x, y):
         self.rect.x = x
         self.rect.y = y
-    
+
     # update function, every loop this function will be called
     def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(),\
-               portal = pygame.sprite.Group()): 
+               portal = pygame.sprite.Group()):
         self.move(collidable)
         self.isCollided_with_treasures(treasures)
         self.isNextStage = self.isCollided_with_portal(portal)
@@ -102,7 +104,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         # If any direction key is pressed
-        if(keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]): 
+        if(keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
 
             # account for horizontal movement if pressed left key
             if(keys[pygame.K_LEFT]):
@@ -112,10 +114,10 @@ class Player(pygame.sprite.Sprite):
             elif (keys[pygame.K_RIGHT]):
                 # self.image = spriteLists[]
                 self.hSpeed = self.speed
-            
+
             else:
                 self.hSpeed = 0
-            
+
             # account for vertical movement
             if (keys[pygame.K_UP]):
                 self.vSpeed = -self.speed
@@ -146,19 +148,19 @@ class Player(pygame.sprite.Sprite):
                 if self.vSpeed > 0:
                     self.direction = 'S'
                 elif self.vSpeed < 0:
-                    self.direction = 'N' 
+                    self.direction = 'N'
 
             # Implement animation
             self.walkAnimation()
-        
+
         # If all direction keys are not pressed
         else:
             self.hSpeed = 0
             self.vSpeed = 0
-        
+
         # after determining the direction of player, check if there is any collision
-        self.isCollided(collidable)       
-    
+        self.isCollided(collidable)
+
     def walkAnimation(self):
         self.walkCount += 1
         if self.walkCount >= 12:
@@ -180,12 +182,12 @@ class Player(pygame.sprite.Sprite):
             self.image = self.imageLists['southwest'][self.walkCount // 6]
         elif self.direction == 'W':
             self.image = self.imageLists['west'][self.walkCount // 6]
-    
+
     def isCollided(self, collidable):
         # Find sprites in a group that intersect another sprite.
         # spritecollide(sprite, group, dokill, collided = None)
         # Intersection is determined by comparing the Sprite.rect attribute of each Spri
-        
+
         self.rect.x += self.hSpeed
 
         # Find sprites in a group that intersect another sprite.
@@ -203,12 +205,12 @@ class Player(pygame.sprite.Sprite):
             elif (self.hSpeed < 0):
                 self.rect.left = collided_object.rect.right
                 self.hSpeed = 0
-        
+
         self.rect.y += self.vSpeed
 
         # if intersection with collidable object in y direction
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
-        for collided_object in collision_list:            
+        for collided_object in collision_list:
             # Moving down
             if (self. vSpeed > 0):
 
@@ -236,9 +238,9 @@ class Enemy(pygame.sprite.Sprite):
 
         self.image = pygame.image.load('enemyA.png')
         self.rect = self.image.get_rect()
-        
-        self.rect.x = x 
-        self.rect.y = y 
+
+        self.rect.x = x
+        self.rect.y = y
         self.speed = 3
         self.direction = random.choice(["up", "down", "left", "right"])
 
@@ -349,10 +351,10 @@ class Portal(pygame.sprite.Sprite):
         self.imageList = imageList
         self.image = imageList[0]
         self.rect = self.image.get_rect()
-        self.rect.x = x 
-        self.rect.y = y 
+        self.rect.x = x
+        self.rect.y = y
         self.count = 0
-    
+
     def update(self):
         self.animation()
 
@@ -360,10 +362,10 @@ class Portal(pygame.sprite.Sprite):
         self.count += 1
         if self.count >= 50:
             self.count = 0
-        
+
         self.image = self.imageList[self.count // 10]
-    
-    def shift_world(self, shift_x, shift_y): 
+
+    def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
         self.rect.y += shift_y
 
@@ -714,7 +716,7 @@ while running:
          running = False
 
     # Update objects
-    
+
     # player move -> check for collision with treasure / portal / enemy
     player_group.update(walls_group, treasures_group, portal_group)
 
@@ -733,7 +735,7 @@ while running:
     # Update viewbox
     run_viewbox(player.rect.x, player.rect.y)
 
-    # Draw 
+    # Draw
 
     # Fill background with black color
     window.fill((0,0,0))
@@ -743,7 +745,7 @@ while running:
     treasures_group.draw(window)
     player_group.draw(window)
     enemies_group.draw(window)
-    
+
     # Implement fog from level 2 onwards
     if current_level >= 1:
         fog_group.draw(window)

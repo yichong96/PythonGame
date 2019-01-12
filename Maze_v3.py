@@ -92,6 +92,10 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+    def set_absolute_position(self, x, y):
+        self.abs_x = x
+        self.abs_y = y
+
     # update function, every loop this function will be called
     def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(),\
                portal = pygame.sprite.Group()):
@@ -169,19 +173,19 @@ class Player(pygame.sprite.Sprite):
         if self.direction == 'E':
             self.image = self.imageLists['east'][self.walkCount // 4]
         elif self.direction == 'N':
-            self.image = self.imageLists['north'][self.walkCount // 6]
+            self.image = self.imageLists['north'][self.walkCount // 4]
         elif self.direction == 'NE':
-            self.image = self.imageLists['northeast'][self.walkCount // 6]
+            self.image = self.imageLists['northeast'][self.walkCount // 4]
         elif self.direction == 'NW':
-            self.image = self.imageLists['northwest'][self.walkCount // 6]
+            self.image = self.imageLists['northwest'][self.walkCount // 4]
         elif self.direction == 'S':
-            self.image = self.imageLists['south'][self.walkCount // 6]
+            self.image = self.imageLists['south'][self.walkCount // 4]
         elif self.direction == 'SE':
-            self.image = self.imageLists['southeast'][self.walkCount // 6]
+            self.image = self.imageLists['southeast'][self.walkCount // 4]
         elif self.direction == 'SW':
-            self.image = self.imageLists['southwest'][self.walkCount // 6]
+            self.image = self.imageLists['southwest'][self.walkCount // 4]
         elif self.direction == 'W':
-            self.image = self.imageLists['west'][self.walkCount // 6]
+            self.image = self.imageLists['west'][self.walkCount // 4]
 
     def isCollided(self, collidable):
         # Find sprites in a group that intersect another sprite.
@@ -232,17 +236,21 @@ class Player(pygame.sprite.Sprite):
                 return True
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, imageLists):
 
         super().__init__()
 
-        self.image = pygame.image.load('enemyA.png')
+        self.imageLists = imageLists
+        self.image = self.imageLists['down'][0]
+
         self.rect = self.image.get_rect()
 
         self.rect.x = x
         self.rect.y = y
-        self.speed = 3
+
+        self.speed = 2
         self.direction = random.choice(["up", "down", "left", "right"])
+        self.walkCount = 0
 
     def set_position(self, x, y):
         self.rect.x = x
@@ -272,9 +280,26 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.dx = 0
             self.dy = 0
+        
+        self.walkAnimation()
 
         self.rect.x += self.dx
         self.rect.y += self.dy
+
+    def walkAnimation(self):
+        self.walkCount += 1
+        if self.walkCount >= 12:
+            self.walkCount = 0
+        
+        if self.direction == 'up':
+            self.image = self.imageLists['up'][self.walkCount // 4]
+        elif self.direction == 'down':
+            self.image = self.imageLists['down'][self.walkCount // 4]
+        elif self.direction == 'left':
+            self.image = self.imageLists['left'][self.walkCount // 4]
+        elif self.direction == 'right':
+            self.image = self.imageLists['right'][self.walkCount // 4]
+
 
     def isCollided(self, collidable):
         # check for any enemy collision with walls_Group, if there is a collision, set the
@@ -305,7 +330,8 @@ class Enemy(pygame.sprite.Sprite):
                 self.direction = random.choice(["down", "left", "right"])
 
     def shift_world(self, shift_x, shift_y):
-        self.set_position(self.rect.x + shift_x, self.rect.y + shift_y)
+        self.rect.x += shift_x
+        self.rect.y += shift_y
 
 class Wall(pygame.sprite.Sprite):
 
@@ -397,6 +423,28 @@ class MiniWall(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class MiniPlayer (object):
+    def __init__(self, player_abs_x = 0, player_abs_y = 0, win_width = 1024, win_height = 768):
+
+        super().__init__()
+
+        self.image = pygame.image.load('images/features/miniPlayer.png')
+        self.rect = self.image.get_rect()
+        self.win_width = win_width
+        self.win_height = win_height
+
+        self.update(player_abs_x, player_abs_y)
+
+    def update(self, player_abs_x, player_abs_y):
+        mini_x = 150 / (64 * 50) * player_abs_x
+        mini_y = 150 / (64 * 50) * player_abs_y
+        self.rect.x = self.win_width - 160 + mini_x
+        self.rect.x = self.win_height - 160 + mini_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+
 class Fog(pygame.sprite.Sprite):
     def __init__(self):
 
@@ -411,14 +459,14 @@ class Fog(pygame.sprite.Sprite):
 
 # Initialize all objects relevant to the game.
 def create_instances():
-    global current_level, running, player, player_group, miniMap, miniWalls_group, fog_group
+    global current_level, running, player, player_group, miniMap, miniPlayer, miniWalls_group, fog_group
     global walls_group, enemies_group, treasures_group, portal_group
     global win_width, win_height
 
     current_level = 0
     running = True
 
-    player = Player(imageLists = ratLists)
+    player = Player(imageLists = ratImageLists)
     player_group = pygame.sprite.Group()
     player_group.add(player)
 
@@ -432,6 +480,7 @@ def create_instances():
     fog_group.add(Fog())
 
     miniMap = MiniMap(win_width, win_height)
+    miniPlayer = MiniPlayer()
 
 def run_viewbox(player_x, player_y):
     global player, walls_Group, enemies_Group, treasures_group, portal_group
@@ -637,7 +686,7 @@ def define_maze():
     levels = [level_1, level_2, level_3]
 
 def setup_maze(current_level):
-    global levels, player, walls_group, enemies_group, treasures_group, portal_group
+    global levels, player, walls_group, enemies_group, treasures_group, portal_group, miniPlayer
     global win_height, win_width
 
     for y in range(len(levels[current_level])):
@@ -653,10 +702,12 @@ def setup_maze(current_level):
 
             elif character == "P":
                 player.set_position(pos_x, pos_y)
+                player.set_absolute_position(pos_x, pos_y)
+                miniPlayer.update(pos_x, pos_y)
 
             elif character == "E":
                 #Update enemy coordinates
-                enemies_group.add(Enemy(pos_x, pos_y))
+                enemies_group.add(Enemy(pos_x, pos_y, chefImageLists))
 
             elif character == "T":
                 #Update treasure coordinates
@@ -691,8 +742,11 @@ def nextStage(isNextStage):
 #######################################################################################
 
 # Load images
-ratLists = loadImageListInDict('images/rat')
+ratImageLists = loadImageListInDict('images/rat')
+chefImageLists = loadImageListInDict('images/chef')
+
 portalList = loadImageInList('images/portal')
+
 
 # Initialise the maze
 create_instances()
@@ -732,6 +786,9 @@ while running:
     # update fog field
     fog_group.update(player.rect.x, player.rect.y)
 
+    # update miniPlayer icon in minimap
+    miniPlayer.update(player.abs_x, player.abs_y)
+
     # Update viewbox
     run_viewbox(player.rect.x, player.rect.y)
 
@@ -752,6 +809,7 @@ while running:
 
     miniMap.draw(window)
     miniWalls_group.draw(window)
+    miniPlayer.draw(window)
 
     # Delay & Update Screen
     clock.tick(fps)

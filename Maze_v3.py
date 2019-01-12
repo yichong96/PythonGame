@@ -193,6 +193,7 @@ class Player(pygame.sprite.Sprite):
         # Intersection is determined by comparing the Sprite.rect attribute of each Spri
 
         self.rect.x += self.hSpeed
+        self.abs_x += self.hSpeed
 
         # Find sprites in a group that intersect another sprite.
         # spritecollide(sprite, group, dokill, collided = None)
@@ -203,26 +204,42 @@ class Player(pygame.sprite.Sprite):
         for collided_object in collision_list:
             # if (self.rect.bottom <= collided_object.rect.top or self.rect.top >= collided_object.rect.bottom):
             if (self.hSpeed > 0):
+                # Update Absoulte position
+                hDiff = collided_object.rect.left - self.rect.right
+                self.abs_x += hDiff
+                # Update relative position
                 self.rect.right = collided_object.rect.left
                 self.hSpeed = 0
 
             elif (self.hSpeed < 0):
+                # Update Absoulte position
+                hDiff = collided_object.rect.right - self.rect.left
+                self.abs_x += hDiff
+                # Update relative position
                 self.rect.left = collided_object.rect.right
                 self.hSpeed = 0
 
         self.rect.y += self.vSpeed
-
+        self.abs_y += self.vSpeed
         # if intersection with collidable object in y direction
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             # Moving down
             if (self. vSpeed > 0):
-
+                # Update Absoulte position
+                vDiff = collided_object.rect.top - self.rect.bottom
+                self.abs_y += vDiff
+                
+                # Update relative position
                 self.rect.bottom= collided_object.rect.top
                 self.vSpeed = 0
             # Moving up
-            if (self. vSpeed < 0):
+            elif (self. vSpeed < 0):
+                # Update Absoulte position
+                vDiff = collided_object.rect.bottom - self.rect.top
+                self.abs_y += vDiff
 
+                # Update relative position
                 self.rect.top = collided_object.rect.bottom
                 self.vSpeed = 0
 
@@ -433,17 +450,15 @@ class MiniPlayer (object):
         self.win_width = win_width
         self.win_height = win_height
 
-        self.update(player_abs_x, player_abs_y)
-
     def update(self, player_abs_x, player_abs_y):
         mini_x = 150 / (64 * 50) * player_abs_x
         mini_y = 150 / (64 * 50) * player_abs_y
+        
         self.rect.x = self.win_width - 160 + mini_x
-        self.rect.x = self.win_height - 160 + mini_y
+        self.rect.y = self.win_height - 160 + mini_y
 
     def draw(self, window):
-        window.blit(self.image, (self.rect.x, self.rect.y))
-
+        window.blit(self.image, (self.rect.x - 5, self.rect.y - 5))
 
 class Fog(pygame.sprite.Sprite):
     def __init__(self):

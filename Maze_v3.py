@@ -5,7 +5,8 @@ import pygame, os, random
 pygame.init()
 
  # size of the game window
-win_width, win_height = 1024, 768
+# win_width, win_height = 1024, 768
+win_width, win_height = 600, 600
 
 
 # win_size = (win_width, win_height)
@@ -29,7 +30,7 @@ pygame.display.set_caption("MazeGame")
 # create an object to help track time
 clock = pygame.time.Clock()
 
-fps = 60
+fps = 30
 ######################################################################
 
 def loadImageListInDict(path):
@@ -82,7 +83,7 @@ class Player(pygame.sprite.Sprite):
 
         self.hSpeed = 0
         self.vSpeed = 0
-        self.speed = 5
+        self.speed = 8
         self.imageLists = imageLists
         self.isNextStage = False
         self.walkCount = 0
@@ -355,7 +356,7 @@ class Wall(pygame.sprite.Sprite):
     def __init__(self, x, y, width = 32, height = 32):
 
         super().__init__()
-        self.image = pygame.image.load('wall_small.png').convert()
+        self.image = pygame.image.load('wall_small.png').convert_alpha()
 
         # self.image = pygame.Surface((width, height))
         # self.image.fill((255,100,180))
@@ -416,16 +417,19 @@ class MiniMap(object):
     def __init__(self, win_width, win_height):
         super().__init__()
 
-        self.width, self.height = 170, 170
-        self.image = pygame.Surface((self.width, self.height))
-        self.image.fill((255,255,255))
+        self.width, self.height = 190, 190
 
+        self.image = pygame.image.load('images/features/miniFrame.png').convert_alpha()
         self.rect = self.image.get_rect()
+
+        self.bg = pygame.Surface((self.width - 20, self.height - 20))
+        self.bg.fill((0,0,0))
 
         self.rect.x = win_width - self.width
         self.rect.y = win_height - self.height
 
     def draw(self, window):
+        window.blit(self.bg,(self.rect.x + 10, self.rect.y + 10))
         window.blit(self.image,(self.rect.x, self.rect.y))
 
 class MiniWall(pygame.sprite.Sprite):
@@ -433,7 +437,7 @@ class MiniWall(pygame.sprite.Sprite):
 
         super().__init__()
 
-        self.image = pygame.image.load('miniWall.png').convert()
+        self.image = pygame.image.load('miniWall.png').convert_alpha()
 
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -453,8 +457,8 @@ class MiniPlayer (object):
         mini_x = 150 / (32 * 50) * player_abs_x
         mini_y = 150 / (32 * 50) * player_abs_y
         
-        self.rect.x = self.win_width - 160 + mini_x
-        self.rect.y = self.win_height - 160 + mini_y
+        self.rect.x = self.win_width - 170 + mini_x
+        self.rect.y = self.win_height - 170 + mini_y
 
     def draw(self, window):
         window.blit(self.image, (self.rect.x - 5, self.rect.y - 5))
@@ -712,7 +716,7 @@ def setup_maze(current_level):
             if character == "X":
                 #Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
-                miniWalls_group.add(MiniWall(win_width - 160 + (x * 3), win_height - 160 + (y * 3)))
+                miniWalls_group.add(MiniWall(win_width - 170 + (x * 3), win_height - 170 + (y * 3)))
 
             elif character == "P":
                 player.set_position(pos_x, pos_y)

@@ -29,7 +29,7 @@ pygame.display.set_caption("MazeGame")
 # create an object to help track time
 clock = pygame.time.Clock()
 
-fps = 60
+fps = 30
 ######################################################################
 
 def loadImageListInDict(path):
@@ -69,7 +69,7 @@ def loadImageInList(path):
 # pygame.sprite.Sprite -> The base class for visible game objects
 class Player(pygame.sprite.Sprite):
     # set image to be 32 x 32
-    def __init__(self, color = pygame.Color.b, imageLists = None, width = 32, height = 32):
+    def __init__(self, color = pygame.Color.b, imageLists = {}, ghostImageList = [], width = 32, height = 32):
 
         # super function allows the use of pygame.Rect object
         super().__init__()
@@ -84,9 +84,15 @@ class Player(pygame.sprite.Sprite):
         self.vSpeed = 0
         self.speed = 8
         self.imageLists = imageLists
+        self.ghostImageList = ghostImageList
         self.isNextStage = False
         self.walkCount = 0
+        
         self.direction = 'S'
+
+        self.ghostWalkCount = 0
+        self.invulnerable = False
+        self.invulnerable_count = 0
 
     def set_position(self, x, y):
         self.rect.x = x
@@ -98,11 +104,23 @@ class Player(pygame.sprite.Sprite):
 
     # update function, every loop this function will be called
     def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(),\
-               portal = pygame.sprite.Group(), traps = pygame.sprite.Group()):
+               portal = pygame.sprite.Group(), traps = pygame.sprite.Group(), enemies = pygame.sprite.Group(), spikes = pygame.sprite.Group()):
         self.move(collidable)
         self.isCollided_with_treasures(treasures)
-        self.isCollided_with_trap(traps)
         self.isNextStage = self.isCollided_with_portal(portal)
+        if self.invulnerable:
+            if self.invulnerable_count >= 60:
+                self.invulnerable_count = 0
+                self.invulnerable = False
+            else:
+                self.invulnerable_count += 1
+
+        self.isCollided_with_damage_source(traps)
+        self.isCollided_with_damage_source(enemies)
+        self.isCollided_with_damage_source(spikes)
+
+        # Implement animation
+        self.walkAnimation()
 
     def move(self, collidable):
         # get key pressed by user
@@ -155,9 +173,6 @@ class Player(pygame.sprite.Sprite):
                 elif self.vSpeed < 0:
                     self.direction = 'N'
 
-            # Implement animation
-            self.walkAnimation()
-
         # If all direction keys are not pressed
         else:
             self.hSpeed = 0
@@ -167,26 +182,36 @@ class Player(pygame.sprite.Sprite):
         self.isCollided(collidable)
 
     def walkAnimation(self):
-        self.walkCount += 1
-        if self.walkCount >= 6:
-            self.walkCount = 0
-
-        if self.direction == 'E':
-            self.image = self.imageLists['east'][self.walkCount // 2]
-        elif self.direction == 'N':
-            self.image = self.imageLists['north'][self.walkCount // 2]
-        elif self.direction == 'NE':
-            self.image = self.imageLists['northeast'][self.walkCount // 2]
-        elif self.direction == 'NW':
-            self.image = self.imageLists['northwest'][self.walkCount // 2]
-        elif self.direction == 'S':
-            self.image = self.imageLists['south'][self.walkCount // 2]
-        elif self.direction == 'SE':
-            self.image = self.imageLists['southeast'][self.walkCount // 2]
-        elif self.direction == 'SW':
-            self.image = self.imageLists['southwest'][self.walkCount // 2]
-        elif self.direction == 'W':
-            self.image = self.imageLists['west'][self.walkCount // 2]
+ 
+        if self.invulnerable == False:
+           
+            self.walkCount += 1
+            
+            if self.walkCount >= 18:
+                self.walkCount = 0
+            
+            if self.direction == 'E':
+                self.image = self.imageLists['east'][self.walkCount // 6]
+            elif self.direction == 'N':
+                self.image = self.imageLists['north'][self.walkCount // 6]
+            elif self.direction == 'NE':
+                self.image = self.imageLists['northeast'][self.walkCount // 6]
+            elif self.direction == 'NW':
+                self.image = self.imageLists['northwest'][self.walkCount // 6]
+            elif self.direction == 'S':
+                self.image = self.imageLists['south'][self.walkCount // 6]
+            elif self.direction == 'SE':
+                self.image = self.imageLists['southeast'][self.walkCount // 6]
+            elif self.direction == 'SW':
+                self.image = self.imageLists['southwest'][self.walkCount // 6]
+            elif self.direction == 'W':
+                self.image = self.imageLists['west'][self.walkCount // 6]
+        
+        else:
+            self.ghostWalkCount += 1
+            if self.walkCount >= 36:
+                self.walkCount = 0
+            self.image = self.ghostImageList[self.walkCount // 6]
 
     def isCollided(self, collidable):
         # Find sprites in a group that intersect another sprite.
@@ -245,16 +270,22 @@ class Player(pygame.sprite.Sprite):
                 self.vSpeed = 0
 
     def isCollided_with_treasures(self, treasures):
-        collision_list = pygame.sprite.spritecollide(self, treasures, True)
+        if (pygame.sprite.spritecollide(self, treasures, True)):
+            food_collision.play()
 
     def isCollided_with_portal(self, portals):
         collision_list = pygame.sprite.spritecollide(self, portals, False)
         for portal in collision_list:
             if (self.rect.collidepoint(portal.rect.centerx, portal.rect.centery)):
+                portal_collision.play()
                 return True
     
-    def isCollided_with_trap(self, traps):
-        collision_list = pygame.sprite.spritecollide(self, traps, False)
+    def isCollided_with_damage_source(self, damage_source):
+        if (pygame.sprite.spritecollide(self, damage_source, False))\
+           and (self.invulnerable == False):
+            self.invulnerable = True
+            enemy_collision.play()
+            return True
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, imageLists):
@@ -550,7 +581,7 @@ def create_instances():
     current_level = 0
     running = True
 
-    player = Player(imageLists = ratImageLists)
+    player = Player(imageLists = ratImageLists, ghostImageList = ghostList)
     player_group = pygame.sprite.Group()
     player_group.add(player)
 
@@ -665,11 +696,11 @@ def define_maze():
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     level_2 = [
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX      XXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX         XXXXXXXXXX",
     "XXXXXXT XXXXXXXT  XX               XXXXXXXXXXXXXXX",
     "XXXXXX  XXXXXXX   XX               XXXXXXXXXXXXXXX",
@@ -719,7 +750,7 @@ def define_maze():
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     level_3 = [
@@ -773,14 +804,12 @@ def define_maze():
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     levels = [level_1, level_2, level_3]
 
 def setup_maze(current_level):
-    global levels, player, walls_group, enemies_group, treasures_group, portal_group, miniPlayer, traps_group
-    global win_height, win_width
 
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
@@ -820,10 +849,11 @@ def setup_maze(current_level):
 
 # Empty the maze
 def clear_maze():
-    global player, walls_group, enemies_group, treasures_group, portal_group, miniWalls_group, traps_group
     walls_group.empty()
     enemies_group.empty()
     treasures_group.empty()
+    traps_group.empty()
+    spikes_group.empty()
     portal_group.empty()
     miniWalls_group.empty()
 
@@ -846,8 +876,17 @@ def nextStage(isNextStage):
 ratImageLists = loadImageListInDict('images/rat')
 chefImageLists = loadImageListInDict('images/chef')
 
+ghostList = loadImageInList('images/ghost')
 portalList = loadImageInList('images/portal')
 spikeList = loadImageInList('images/spike')
+
+# Load musics & sound
+music = pygame.mixer.music.load(os.path.join('audios','Background_Music.mp3'))
+pygame.mixer.music.play(-1)
+food_collision = pygame.mixer.Sound(os.path.join('audios','Food_Collision.wav'))
+enemy_collision = pygame.mixer.Sound(os.path.join('audios','Enemy_Collision.wav'))
+portal_collision = pygame.mixer.Sound(os.path.join('audios','Portal_Collision.wav'))
+
 
 # Initialise the maze
 create_instances()
@@ -873,7 +912,7 @@ while running:
     # Update objects
 
     # player move -> check for collision with treasure / portal / enemy
-    player_group.update(walls_group, treasures_group, portal_group)
+    player_group.update(walls_group, treasures_group, portal_group, traps_group, enemies_group, spikes_group)
 
     # from player group update -> check if collide with portal to advance to next stage
     nextStage(player.isNextStage)
@@ -896,7 +935,7 @@ while running:
     for wall in walls_group:
         if (wall.rect.x < win_width) and (wall.rect.y < win_height):
             wall.draw(window)
-            
+    
     portal_group.draw(window)
     treasures_group.draw(window)
     player_group.draw(window)

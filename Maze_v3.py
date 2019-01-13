@@ -109,7 +109,7 @@ class Player(pygame.sprite.Sprite):
         self.isCollided_with_treasures(treasures)
         self.isNextStage = self.isCollided_with_portal(portal)
         if self.invulnerable:
-            if self.invulnerable_count >= 60:
+            if self.invulnerable_count >= 90:
                 self.invulnerable_count = 0
                 self.invulnerable = False
             else:
@@ -209,9 +209,9 @@ class Player(pygame.sprite.Sprite):
         
         else:
             self.ghostWalkCount += 1
-            if self.walkCount >= 36:
-                self.walkCount = 0
-            self.image = self.ghostImageList[self.walkCount // 6]
+            if self.ghostWalkCount >= 36:
+                self.ghostWalkCount = 0
+            self.image = self.ghostImageList[self.ghostWalkCount // 6]
 
     def isCollided(self, collidable):
         # Find sprites in a group that intersect another sprite.

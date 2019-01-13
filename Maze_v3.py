@@ -29,7 +29,7 @@ pygame.display.set_caption("MazeGame")
 # create an object to help track time
 clock = pygame.time.Clock()
 
-fps = 27
+fps = 60
 ######################################################################
 
 def loadImageListInDict(path):

@@ -5,7 +5,8 @@ import pygame, os, random
 pygame.init()
 
  # size of the game window
-win_width, win_height = 1024, 768
+# win_width, win_height = 1024, 768
+win_width, win_height = 600, 600
 
 
 # win_size = (win_width, win_height)
@@ -19,7 +20,7 @@ numbers representing the width and height. The flags argument is a collection of
 The depth argument represents the number of bits to use for color.
 The Surface that gets returned can be drawn to like a regular Surface but changes will eventually be seen on the monitor.
 """
-window = pygame.display.set_mode(win_size, pygame.RESIZABLE)
+window = pygame.display.set_mode(win_size)
 
 
 # set_caption(title, icontitle=None) -> None
@@ -29,7 +30,7 @@ pygame.display.set_caption("MazeGame")
 # create an object to help track time
 clock = pygame.time.Clock()
 
-fps = 60
+fps = 30
 ######################################################################
 
 def loadImageListInDict(path):
@@ -44,7 +45,7 @@ def loadImageListInDict(path):
             for image in os.listdir(subPath):
                 print(image)
                 if os.path.isfile(os.path.join(subPath,image)):
-                    listsDict[folder].append(pygame.image.load(os.path.join(subPath,image)))
+                    listsDict[folder].append(pygame.image.load(os.path.join(subPath,image)).convert_alpha())
 
     return listsDict
 
@@ -54,7 +55,7 @@ def loadImageInDict(path):
     for image in os.listdir(path):
         subPath = os.path.join(path, image)
         if os.path.isfile(subPath):
-            imageDict[os.path.splitext(image)[0]] = pygame.image.load(subPath)
+            imageDict[os.path.splitext(image)[0]] = pygame.image.load(subPath).convert_alpha()
     return imageDict
 
 def loadImageInList(path):
@@ -63,7 +64,7 @@ def loadImageInList(path):
     for image in os.listdir(path):
         subPath = os.path.join(path, image)
         if os.path.isfile(subPath):
-            imageList.append(pygame.image.load(subPath))
+            imageList.append(pygame.image.load(subPath).convert_alpha())
     return imageList
 
 # pygame.sprite.Sprite -> The base class for visible game objects
@@ -82,7 +83,7 @@ class Player(pygame.sprite.Sprite):
 
         self.hSpeed = 0
         self.vSpeed = 0
-        self.speed = 5
+        self.speed = 8
         self.imageLists = imageLists
         self.isNextStage = False
         self.walkCount = 0
@@ -91,6 +92,10 @@ class Player(pygame.sprite.Sprite):
     def set_position(self, x, y):
         self.rect.x = x
         self.rect.y = y
+
+    def set_absolute_position(self, x, y):
+        self.abs_x = x
+        self.abs_y = y
 
     # update function, every loop this function will be called
     def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(),\
@@ -169,19 +174,19 @@ class Player(pygame.sprite.Sprite):
         if self.direction == 'E':
             self.image = self.imageLists['east'][self.walkCount // 4]
         elif self.direction == 'N':
-            self.image = self.imageLists['north'][self.walkCount // 6]
+            self.image = self.imageLists['north'][self.walkCount // 4]
         elif self.direction == 'NE':
-            self.image = self.imageLists['northeast'][self.walkCount // 6]
+            self.image = self.imageLists['northeast'][self.walkCount // 4]
         elif self.direction == 'NW':
-            self.image = self.imageLists['northwest'][self.walkCount // 6]
+            self.image = self.imageLists['northwest'][self.walkCount // 4]
         elif self.direction == 'S':
-            self.image = self.imageLists['south'][self.walkCount // 6]
+            self.image = self.imageLists['south'][self.walkCount // 4]
         elif self.direction == 'SE':
-            self.image = self.imageLists['southeast'][self.walkCount // 6]
+            self.image = self.imageLists['southeast'][self.walkCount // 4]
         elif self.direction == 'SW':
-            self.image = self.imageLists['southwest'][self.walkCount // 6]
+            self.image = self.imageLists['southwest'][self.walkCount // 4]
         elif self.direction == 'W':
-            self.image = self.imageLists['west'][self.walkCount // 6]
+            self.image = self.imageLists['west'][self.walkCount // 4]
 
     def isCollided(self, collidable):
         # Find sprites in a group that intersect another sprite.
@@ -189,6 +194,7 @@ class Player(pygame.sprite.Sprite):
         # Intersection is determined by comparing the Sprite.rect attribute of each Spri
 
         self.rect.x += self.hSpeed
+        self.abs_x += self.hSpeed
 
         # Find sprites in a group that intersect another sprite.
         # spritecollide(sprite, group, dokill, collided = None)
@@ -199,26 +205,42 @@ class Player(pygame.sprite.Sprite):
         for collided_object in collision_list:
             # if (self.rect.bottom <= collided_object.rect.top or self.rect.top >= collided_object.rect.bottom):
             if (self.hSpeed > 0):
+                # Update Absoulte position
+                hDiff = collided_object.rect.left - self.rect.right
+                self.abs_x += hDiff
+                # Update relative position
                 self.rect.right = collided_object.rect.left
                 self.hSpeed = 0
 
             elif (self.hSpeed < 0):
+                # Update Absoulte position
+                hDiff = collided_object.rect.right - self.rect.left
+                self.abs_x += hDiff
+                # Update relative position
                 self.rect.left = collided_object.rect.right
                 self.hSpeed = 0
 
         self.rect.y += self.vSpeed
-
+        self.abs_y += self.vSpeed
         # if intersection with collidable object in y direction
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             # Moving down
             if (self. vSpeed > 0):
-
+                # Update Absoulte position
+                vDiff = collided_object.rect.top - self.rect.bottom
+                self.abs_y += vDiff
+                
+                # Update relative position
                 self.rect.bottom= collided_object.rect.top
                 self.vSpeed = 0
             # Moving up
-            if (self. vSpeed < 0):
+            elif (self. vSpeed < 0):
+                # Update Absoulte position
+                vDiff = collided_object.rect.bottom - self.rect.top
+                self.abs_y += vDiff
 
+                # Update relative position
                 self.rect.top = collided_object.rect.bottom
                 self.vSpeed = 0
 
@@ -232,17 +254,21 @@ class Player(pygame.sprite.Sprite):
                 return True
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, imageLists):
 
         super().__init__()
 
-        self.image = pygame.image.load('enemyA.png')
+        self.imageLists = imageLists
+        self.image = self.imageLists['down'][0]
+
         self.rect = self.image.get_rect()
 
         self.rect.x = x
         self.rect.y = y
-        self.speed = 3
+
+        self.speed = 2
         self.direction = random.choice(["up", "down", "left", "right"])
+        self.walkCount = 0
 
     def set_position(self, x, y):
         self.rect.x = x
@@ -272,9 +298,26 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.dx = 0
             self.dy = 0
+        
+        self.walkAnimation()
 
         self.rect.x += self.dx
         self.rect.y += self.dy
+
+    def walkAnimation(self):
+        self.walkCount += 1
+        if self.walkCount >= 12:
+            self.walkCount = 0
+        
+        if self.direction == 'up':
+            self.image = self.imageLists['up'][self.walkCount // 4]
+        elif self.direction == 'down':
+            self.image = self.imageLists['down'][self.walkCount // 4]
+        elif self.direction == 'left':
+            self.image = self.imageLists['left'][self.walkCount // 4]
+        elif self.direction == 'right':
+            self.image = self.imageLists['right'][self.walkCount // 4]
+
 
     def isCollided(self, collidable):
         # check for any enemy collision with walls_Group, if there is a collision, set the
@@ -305,14 +348,15 @@ class Enemy(pygame.sprite.Sprite):
                 self.direction = random.choice(["down", "left", "right"])
 
     def shift_world(self, shift_x, shift_y):
-        self.set_position(self.rect.x + shift_x, self.rect.y + shift_y)
+        self.rect.x += shift_x
+        self.rect.y += shift_y
 
 class Wall(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, width = 64, height = 64):
+    def __init__(self, x, y, width = 32, height = 32):
 
         super().__init__()
-        self.image = pygame.image.load('wall.png')
+        self.image = pygame.image.load('wall_small.png').convert_alpha()
 
         # self.image = pygame.Surface((width, height))
         # self.image.fill((255,100,180))
@@ -331,10 +375,7 @@ class Treasure(pygame.sprite.Sprite):
     def __init__(self, x, y, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('Treasure.png')
-
-        # self.image = pygame.Surface((width, height))
-        # self.image.fill((255,100,180))
+        self.image = pygame.image.load('Treasure.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -350,7 +391,7 @@ class Portal(pygame.sprite.Sprite):
     def __init__(self, x, y, imageList = None, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('portal.png')
+        self.image = pygame.image.load('portal.png').convert_alpha()
         self.imageList = imageList
         self.image = imageList[0]
         self.rect = self.image.get_rect()
@@ -375,18 +416,20 @@ class Portal(pygame.sprite.Sprite):
 class MiniMap(object):
     def __init__(self, win_width, win_height):
         super().__init__()
-        # self.image = pygame.image.load('wall.png')
 
-        self.width, self.height = 170, 170
-        self.image = pygame.Surface((self.width, self.height))
-        self.image.fill((255,255,255))
+        self.width, self.height = 190, 190
 
+        self.image = pygame.image.load('images/features/miniFrame.png').convert_alpha()
         self.rect = self.image.get_rect()
+
+        self.bg = pygame.Surface((self.width - 20, self.height - 20))
+        self.bg.fill((0,0,0))
 
         self.rect.x = win_width - self.width
         self.rect.y = win_height - self.height
 
     def draw(self, window):
+        window.blit(self.bg,(self.rect.x + 10, self.rect.y + 10))
         window.blit(self.image,(self.rect.x, self.rect.y))
 
 class MiniWall(pygame.sprite.Sprite):
@@ -394,17 +437,37 @@ class MiniWall(pygame.sprite.Sprite):
 
         super().__init__()
 
-        self.image = pygame.image.load('miniWall.png')
+        self.image = pygame.image.load('miniWall.png').convert_alpha()
 
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
 
+class MiniPlayer (object):
+    def __init__(self, player_abs_x = 0, player_abs_y = 0, win_width = 1024, win_height = 768):
+
+        super().__init__()
+
+        self.image = pygame.image.load('images/features/miniPlayer.png').convert_alpha()
+        self.rect = self.image.get_rect()
+        self.win_width = win_width
+        self.win_height = win_height
+
+    def update(self, player_abs_x, player_abs_y):
+        mini_x = 150 / (32 * 50) * player_abs_x
+        mini_y = 150 / (32 * 50) * player_abs_y
+        
+        self.rect.x = self.win_width - 170 + mini_x
+        self.rect.y = self.win_height - 170 + mini_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x - 5, self.rect.y - 5))
+
 class Fog(pygame.sprite.Sprite):
     def __init__(self):
 
         super().__init__()
-        self.image = pygame.image.load('fog.png')
+        self.image = pygame.image.load('fog.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -414,14 +477,14 @@ class Fog(pygame.sprite.Sprite):
 
 # Initialize all objects relevant to the game.
 def create_instances():
-    global current_level, running, player, player_group, miniMap, miniWalls_group, fog_group
+    global current_level, running, player, player_group, miniMap, miniPlayer, miniWalls_group, fog_group
     global walls_group, enemies_group, treasures_group, portal_group
     global win_width, win_height
 
     current_level = 0
     running = True
 
-    player = Player(imageLists = ratLists)
+    player = Player(imageLists = ratImageLists)
     player_group = pygame.sprite.Group()
     player_group.add(player)
 
@@ -435,6 +498,7 @@ def create_instances():
     fog_group.add(Fog())
 
     miniMap = MiniMap(win_width, win_height)
+    miniPlayer = MiniPlayer()
 
 def run_viewbox(player_x, player_y):
     global player, walls_Group, enemies_Group, treasures_group, portal_group
@@ -444,19 +508,19 @@ def run_viewbox(player_x, player_y):
     bottom_viewbox = win_height/2 + win_height/8
     dx, dy = 0, 0
 
-    if(player_x < left_viewbox):
+    if(player_x <= left_viewbox):
         dx = left_viewbox - player_x
         player.set_position(left_viewbox, player.rect.y)
 
-    elif(player_x > right_viewbox):
+    elif(player_x >= right_viewbox):
         dx = right_viewbox - player_x
         player.set_position(right_viewbox, player.rect.y)
 
-    if(player_y < top_viewbox):
+    if(player_y <= top_viewbox):
         dy = top_viewbox - player_y
         player.set_position(player.rect.x, top_viewbox)
 
-    elif(player_y > bottom_viewbox):
+    elif(player_y >= bottom_viewbox):
         dy = bottom_viewbox - player_y
         player.set_position(player.rect.x, bottom_viewbox)
 
@@ -482,24 +546,24 @@ def define_maze():
     "XXXXXTTXXX XXXX  XX     TXX    XXXXXXXXXXXXXXXXXXX",
     "XXXXXP       XX  XX      XX    XXXXXXXXXXXXXXXXXXX",
     "XXXXXU       XX  XX  XXXXXX    XXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXX  XX     XXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXT        XX     XXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXX         XX TX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXXXXX         XXXXXXXXXXXXXXXXXXX",
+    "XXX            T               XXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX              T  XX TX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX    EXX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XX      E   XXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XX  T       XXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XX          XXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XX          XXXX",
+    "XXXXXXXXXXXXXXXXXXX     XXXXX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXXXX     XX XX     XXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XX     XXXXXXXXXXXXXXXX",
@@ -538,11 +602,11 @@ def define_maze():
     "XXXXXXXXXXX   XX  XX   XXXX        XXXXXXXXXXXXXXX",
     "XXXXXXP XXX   XX  XX   XXXX T      XXXXXXXXXXXXXXX",
     "XXXXXX   U    XX  XX   XXXXXX      XXXXXXXXXXXXXXX",
-    "XXXXXX  T  E                       XXXXXXXXXXXXXXX",
+    "XXXXXX  T  E          E            XXXXXXXXXXXXXXX",
     "XXXXXXXXXXXX                       XXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXXXXX                X     EE    XXXXX",
+    "XXXXXXX   XXXXXXX                X           XXXXX",
+    "XXXXXXX   XXXXXXX                X     TT    XXXXX",
     "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXX                XXXXXXXXXXXXXXXXX",
@@ -586,19 +650,19 @@ def define_maze():
     level_3 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXX      XXXXXXXXXXXXXXXXXX",
-    "XXXXXXT XXXXXXXT  XX               XXXXXXXXXXXXXXX",
-    "XXXXXX  XXXXXXX   XX               XXXXXXXXXXXXXXX",
+    "XXXXXXT XXXXXXXT  XX         E     XXXXXXXXXXXXXXX",
+    "XXXXXX  XXXXXXX   XX                      TXXXXXXX",
     "XXXXXX        XX  XX   XXX      X  XXXXXXXXXXXXXXX",
     "XXXXXXXXXXX   XX  XX   XXX      X  XXXXXXXXXXXXXXX",
     "XXXXXX  XXX   XX  XX   XXX      X TXXXXXXXXXXXXXXX",
     "XXXXXX        XX  XX   XXX      XXXXXXXXXXXXXXXXXX",
     "XXXXXX         T    P U            XXXXXXXXXXXXXXX",
     "XXXXXXXXXXXX       T    E          XXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXX  XXXXXXXXXX X  XXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXX   XXXX  X       X XX                XXXXXX",
+    "XXXXXXX   XXXX  X       X XX                XXXXXX",
+    "XXXXXXX   XXXXXXX       X XXXX              XXXXXX",
+    "XXXXXXXXXXXXXXXXX       XXXXXX              XXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXX   XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXX",
@@ -640,26 +704,28 @@ def define_maze():
     levels = [level_1, level_2, level_3]
 
 def setup_maze(current_level):
-    global levels, player, walls_group, enemies_group, treasures_group, portal_group
+    global levels, player, walls_group, enemies_group, treasures_group, portal_group, miniPlayer
     global win_height, win_width
 
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
             character = levels[current_level][y][x]
-            pos_x = (x*64)
-            pos_y = (y*64)
+            pos_x = (x*32)
+            pos_y = (y*32)
 
             if character == "X":
                 #Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
-                miniWalls_group.add(MiniWall(win_width - 160 + (x * 3), win_height - 160 + (y * 3)))
+                miniWalls_group.add(MiniWall(win_width - 170 + (x * 3), win_height - 170 + (y * 3)))
 
             elif character == "P":
                 player.set_position(pos_x, pos_y)
+                player.set_absolute_position(pos_x, pos_y)
+                miniPlayer.update(pos_x, pos_y)
 
             elif character == "E":
                 #Update enemy coordinates
-                enemies_group.add(Enemy(pos_x, pos_y))
+                enemies_group.add(Enemy(pos_x, pos_y, chefImageLists))
 
             elif character == "T":
                 #Update treasure coordinates
@@ -694,7 +760,9 @@ def nextStage(isNextStage):
 #######################################################################################
 
 # Load images
-ratLists = loadImageListInDict('images/rat')
+ratImageLists = loadImageListInDict('images/rat')
+chefImageLists = loadImageListInDict('images/chef')
+
 portalList = loadImageInList('images/portal')
 
 # Initialise the maze
@@ -735,6 +803,9 @@ while running:
     # update fog field
     fog_group.update(player.rect.x, player.rect.y)
 
+    # update miniPlayer icon in minimap
+    miniPlayer.update(player.abs_x, player.abs_y)
+
     # Update viewbox
     run_viewbox(player.rect.x, player.rect.y)
 
@@ -755,9 +826,10 @@ while running:
 
     miniMap.draw(window)
     miniWalls_group.draw(window)
+    miniPlayer.draw(window)
 
     # Delay & Update Screen
-    clock.tick(fps)
     pygame.display.update()
+    clock.tick(fps)
 
 pygame.quit()

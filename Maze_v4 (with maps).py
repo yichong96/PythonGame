@@ -115,9 +115,10 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.invulnerable_count += 1
 
-        self.isCollided_with_damage_source(traps)
-        self.isCollided_with_damage_source(enemies)
-        self.isCollided_with_damage_source(spikes)
+        else:
+            self.isCollided_with_damage_source(traps)
+            self.isCollided_with_damage_source(enemies)
+            self.isCollided_with_damage_source(spikes)
 
         # Implement animation
         self.walkAnimation()
@@ -281,11 +282,12 @@ class Player(pygame.sprite.Sprite):
                 return True
     
     def isCollided_with_damage_source(self, damage_source):
-        if (pygame.sprite.spritecollide(self, damage_source, False))\
-           and (self.invulnerable == False):
-            self.invulnerable = True
-            enemy_collision.play()
-            return True
+        collision_list = pygame.sprite.spritecollide(self, damage_source, False)
+        for item in collision_list:
+            if (item.rect.collidepoint(self.rect.centerx, self.rect.centery)):
+                enemy_collision.play()
+                self.invulnerable = True
+                return True
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, imageLists):
@@ -665,8 +667,8 @@ def define_maze():
     "XX   XXXXXXXXXXXXXX     XXXXXXXXXXXXXXXX  U XXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XX   XXXP                        XXX    T      XXX",
-    "XX   XXX                         XXX           XXX",
+    "XX   XXXP    C                   XXX    T      XXX",
+    "XX   XXX          S              XXX           XXX",
     "XX   XXX       T                 XXX   XXXXX   XXX",
     "XX   XXX                         XXX   XXXXX   XXX",
     "XX   XXX                         XXX   XXXXX   XXX",

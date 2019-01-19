@@ -5,7 +5,7 @@ import pygame, os, random, math, sys
 pygame.init()
 
  # size of the game window
-win_width, win_height = 1024, 768
+win_width, win_height = 1280, 728
 
 
 # win_size = (win_width, win_height)
@@ -177,7 +177,6 @@ class Player(pygame.sprite.Sprite):
                     self.direction = 'S'
                 elif self.vSpeed < 0:
                     self.direction = 'N'
-
         # If all direction keys are not pressed
         else:
             self.hSpeed = 0
@@ -1001,7 +1000,11 @@ chefImageLists = loadImageListInDict('images/chef')
 ghostList = loadImageInList('images/ghost')
 portalList = loadImageInList('images/portal')
 spikeList = loadImageInList('images/spike')
+
+
+loadingScreen = pygame.image.load('images/backgrounds/loadingScreen.png')
 heartShape = pygame.image.load('images/features/heart_2.png')
+
 # Load musics & sound
 music = pygame.mixer.music.load(os.path.join('audios','Background_Music.mp3'))
 pygame.mixer.music.play(-1)
@@ -1025,6 +1028,7 @@ font1 = pygame.font.SysFont('comicsans',32,True,True)
 # Initialise the maze
 i = 0
 
+loading = True;
 create_instances()
 define_maze()
 setup_maze(current_level)
@@ -1039,51 +1043,59 @@ while running:
     # Update objects
 
     # player move -> check for collision with treasure / portal / enemy
-    player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
+    if loading:
+        window.blit(loadingScreen, (0,0))
+        for event in pygame.event.get():
+            if(event.type == pygame.KEYDOWN):
+                loading = False
 
-    # from player group update -> check if collide with portal to advance to next stage
-    nextStage(player.isNextStage)
 
-    portal_group.update()
-    enemies_group.update(walls_group, invisibleWalls_group)
-    traps_group.update(player.rect.centerx, player.rect.centery)
-    spikes_group.update()
+    else:
+        player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
 
-    fog_group.update(player.rect.x, player.rect.y)
-    miniPlayer.update(player.abs_x, player.abs_y)
+        # from player group update -> check if collide with portal to advance to next stage
+        nextStage(player.isNextStage)
 
-    # Update view camera
-    run_viewbox(player.rect.x, player.rect.y)
-    # Draw
+        portal_group.update()
+        enemies_group.update(walls_group, invisibleWalls_group)
+        traps_group.update(player.rect.centerx, player.rect.centery)
+        spikes_group.update()
 
-    # Fill background with black color
-    window.fill((0,0,0))
+        fog_group.update(player.rect.x, player.rect.y)
+        miniPlayer.update(player.abs_x, player.abs_y)
 
-    for wall in walls_group:
-        if (wall.rect.x < win_width) and (wall.rect.y < win_height):
-            wall.draw(window)
+        # Update view camera
+        run_viewbox(player.rect.x, player.rect.y)
+        # Draw
 
-    portal_group.draw(window)
-    treasures_group.draw(window)
-    hearts_group.draw(window)
-    player_group.draw(window)
-    enemies_group.draw(window)
-    traps_group.draw(window)
-    spikes_group.draw(window)
+        # Fill background with black color
+        window.fill((0,0,0))
 
-    # Implement fog from level 2 onwards
-    if current_level >= 1:
-        fog_group.draw(window)
+        for wall in walls_group:
+            if (wall.rect.x < win_width) and (wall.rect.y < win_height):
+                wall.draw(window)
 
-    miniMap.draw(window)
-    miniWalls_group.draw(window)
-    miniPlayer.draw(window)
+        portal_group.draw(window)
+        treasures_group.draw(window)
+        hearts_group.draw(window)
+        player_group.draw(window)
+        enemies_group.draw(window)
+        traps_group.draw(window)
+        spikes_group.draw(window)
 
-    lifeLeftText = font1.render(' X '+ str(player.live),1,(255,250,250))
-    scoreText = font1.render('Score: ' + str(player.score), 1, (255,250,250))
-    window.blit(heartShape,(25,35))
-    window.blit(lifeLeftText,(50,40))
-    window.blit(scoreText, (30, 70))
+        # Implement fog from level 2 onwards
+        if current_level >= 1:
+            fog_group.draw(window)
+
+        miniMap.draw(window)
+        miniWalls_group.draw(window)
+        miniPlayer.draw(window)
+
+        lifeLeftText = font1.render(' X '+ str(player.live),1,(255,250,250))
+        scoreText = font1.render('Score: ' + str(player.score), 1, (255,250,250))
+        window.blit(heartShape,(25,35))
+        window.blit(lifeLeftText,(50,40))
+        window.blit(scoreText, (30, 70))
 
 
     # Delay & Update Screen

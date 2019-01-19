@@ -5,7 +5,7 @@ import pygame, os, random, math, sys
 pygame.init()
 
  # size of the game window
-win_width, win_height = 1024, 768
+win_width, win_height = 1280, 720
 
 
 # win_size = (win_width, win_height)
@@ -592,7 +592,7 @@ class MiniWall(pygame.sprite.Sprite):
         self.rect.y = y
 
 class MiniPlayer (object):
-    def __init__(self, player_abs_x = 0, player_abs_y = 0, win_width = 1024, win_height = 768):
+    def __init__(self, player_abs_x = 0, player_abs_y = 0, win_width = 1280, win_height = 720):
 
         super().__init__()
 
@@ -649,7 +649,7 @@ def create_instances():
     fog_group.add(Fog())
 
     miniMap = MiniMap(win_width, win_height)
-    miniPlayer = MiniPlayer()
+    miniPlayer = MiniPlayer(win_width = 1280, win_height = 720)
     miniWalls_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):

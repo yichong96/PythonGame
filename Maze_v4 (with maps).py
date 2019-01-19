@@ -1,4 +1,4 @@
-import pygame, os, random, math
+import pygame, os, random, math, sys
 
 # Set up window
 #####################################################################
@@ -87,7 +87,7 @@ class Player(pygame.sprite.Sprite):
         self.ghostImageList = ghostImageList
         self.isNextStage = False
         self.walkCount = 0
-        
+
         self.direction = 'S'
 
         self.ghostWalkCount = 0
@@ -183,14 +183,14 @@ class Player(pygame.sprite.Sprite):
         self.isCollided(collidable)
 
     def walkAnimation(self):
- 
+
         if self.invulnerable == False:
-           
+
             self.walkCount += 1
-            
+
             if self.walkCount >= 18:
                 self.walkCount = 0
-            
+
             if self.direction == 'E':
                 self.image = self.imageLists['east'][self.walkCount // 6]
             elif self.direction == 'N':
@@ -207,7 +207,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.imageLists['southwest'][self.walkCount // 6]
             elif self.direction == 'W':
                 self.image = self.imageLists['west'][self.walkCount // 6]
-        
+
         else:
             self.ghostWalkCount += 1
             if self.ghostWalkCount >= 36:
@@ -256,7 +256,7 @@ class Player(pygame.sprite.Sprite):
                 # Update Absoulte position
                 vDiff = collided_object.rect.top - self.rect.bottom
                 self.abs_y += vDiff
-                
+
                 # Update relative position
                 self.rect.bottom= collided_object.rect.top
                 self.vSpeed = 0
@@ -280,7 +280,7 @@ class Player(pygame.sprite.Sprite):
             if (self.rect.collidepoint(portal.rect.centerx, portal.rect.centery)):
                 portal_collision.play()
                 return True
-    
+
     def isCollided_with_damage_source(self, damage_source):
         collision_list = pygame.sprite.spritecollide(self, damage_source, False)
         for item in collision_list:
@@ -334,7 +334,7 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.dx = 0
             self.dy = 0
-        
+
         self.walkAnimation()
 
         self.rect.x += self.dx
@@ -344,7 +344,7 @@ class Enemy(pygame.sprite.Sprite):
         self.walkCount += 1
         if self.walkCount >= 6:
             self.walkCount = 0
-        
+
         if self.direction == 'up':
             self.image = self.imageLists['up'][self.walkCount // 2]
         elif self.direction == 'down':
@@ -447,7 +447,7 @@ class Trap(pygame.sprite.Sprite):
     def update(self, player_center_x, player_center_y):
         a = self.rect.centerx - player_center_x
         b = self.rect.centery - player_center_y
-        
+
         distance = math.sqrt((a ** 2) + (b **2))
 
         if distance <= 50:
@@ -555,7 +555,7 @@ class MiniPlayer (object):
     def update(self, player_abs_x, player_abs_y):
         mini_x = 150 / (32 * 50) * player_abs_x
         mini_y = 150 / (32 * 50) * player_abs_y
-        
+
         self.rect.x = self.win_width - 170 + mini_x
         self.rect.y = self.win_height - 170 + mini_y
 
@@ -641,7 +641,7 @@ def run_viewbox(player_x, player_y):
 
         for trap in traps_group:
             trap.shift_world(dx, dy)
-        
+
         for spike in spikes_group:
             spike.shift_world(dx, dy)
 
@@ -893,11 +893,11 @@ def setup_maze(current_level):
             elif character == "U":
                 #Update portal coordinates
                 portal_group.add(Portal(pos_x, pos_y, portalList))
-            
+
             elif character == "C":
                 #Update trap coordinates
                 traps_group.add(Trap(pos_x, pos_y))
-            
+
             elif character == "S":
                 #Update spike coordinates
                 spikes_group.add(Spike(pos_x, pos_y, spikeList))
@@ -943,10 +943,7 @@ enemy_collision = pygame.mixer.Sound(os.path.join('audios','Enemy_Collision.wav'
 portal_collision = pygame.mixer.Sound(os.path.join('audios','Portal_Collision.wav'))
 
 
-# Initialise the maze
-create_instances()
-define_maze()
-setup_maze(current_level)
+
 
 ################################################################################
 """
@@ -957,6 +954,14 @@ setup_maze(current_level)
     The queue is a regular queue of pygame.event.EventTypepygame object for representing SDL events event objects,
     there are a variety of ways to access
 """
+
+# Initialise the maze
+i = 0
+
+create_instances()
+define_maze()
+setup_maze(current_level)
+
 while running:
     for event in pygame.event.get():
         if(event.type == pygame.QUIT) or \
@@ -971,7 +976,7 @@ while running:
 
     # from player group update -> check if collide with portal to advance to next stage
     nextStage(player.isNextStage)
-    
+
     portal_group.update()
     enemies_group.update(walls_group)
     traps_group.update(player.rect.centerx, player.rect.centery)
@@ -979,7 +984,7 @@ while running:
 
     fog_group.update(player.rect.x, player.rect.y)
     miniPlayer.update(player.abs_x, player.abs_y)
-    
+
     # Update view camera
     run_viewbox(player.rect.x, player.rect.y)
     # Draw
@@ -990,7 +995,7 @@ while running:
     for wall in walls_group:
         if (wall.rect.x < win_width) and (wall.rect.y < win_height):
             wall.draw(window)
-    
+
     portal_group.draw(window)
     treasures_group.draw(window)
     player_group.draw(window)
@@ -1009,5 +1014,21 @@ while running:
     # Delay & Update Screen
     pygame.display.flip()
     clock.tick_busy_loop(fps)
+
+
+    # test to Restart script once the player clicks try again 
+    """
+    if i == 5:
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path + "/helloWorld.py"
+        print(sys.executable)
+        print(__file__)
+        print(path)
+        print(sys.argv)
+        os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
+    i += 1
+    print(i)
+    """
+
 
 pygame.quit()

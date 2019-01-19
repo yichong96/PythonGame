@@ -1,4 +1,4 @@
-import pygame, os, random, math
+import pygame, os, random, math, sys
 
 # Set up window
 #####################################################################
@@ -96,6 +96,9 @@ class Player(pygame.sprite.Sprite):
         self.invulnerable = False
         self.invulnerable_count = 0
 
+        self.live = 10
+        self.score = 0
+
     def set_position(self, x, y):
         self.rect.x = x
         self.rect.y = y
@@ -105,10 +108,11 @@ class Player(pygame.sprite.Sprite):
         self.abs_y = y
 
     # update function, every loop this function will be called
-    def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(),\
+    def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(), hearts = pygame.sprite.Group(),\
                portal = pygame.sprite.Group(), traps = pygame.sprite.Group(), enemies = pygame.sprite.Group(), spikes = pygame.sprite.Group()):
         self.move(collidable)
         self.isCollided_with_treasures(treasures)
+        self.isCollided_with_hearts(hearts)
         self.isNextStage = self.isCollided_with_portal(portal)
         if self.invulnerable:
             if self.invulnerable_count >= 90:
@@ -175,7 +179,6 @@ class Player(pygame.sprite.Sprite):
                     self.direction = 'S'
                 elif self.vSpeed < 0:
                     self.direction = 'N'
-
         # If all direction keys are not pressed
         else:
             self.hSpeed = 0
@@ -274,6 +277,13 @@ class Player(pygame.sprite.Sprite):
 
     def isCollided_with_treasures(self, treasures):
         if (pygame.sprite.spritecollide(self, treasures, True)):
+            self.score += 100
+            food_collision.play()
+            
+
+    def isCollided_with_hearts(self, hearts):
+        if (pygame.sprite.spritecollide(self, hearts, True)):
+            self.live += 1
             food_collision.play()
 
     def isCollided_with_portal(self, portals):
@@ -289,6 +299,7 @@ class Player(pygame.sprite.Sprite):
             if (item.rect.collidepoint(self.rect.centerx, self.rect.centery)):
                 enemy_collision.play()
                 self.invulnerable = True
+                self.live -= 1
                 return True
 
 class Enemy(pygame.sprite.Sprite):
@@ -312,9 +323,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-    def update(self, collidable = pygame.sprite.Group()):
+    def update(self, collidable = pygame.sprite.Group(), collidable_2 = pygame.sprite.Group()):
         self.move()
         self.isCollided(collidable)
+        self.isCollided(collidable_2)
 
     def move(self):
         if self.direction == "up":
@@ -391,10 +403,10 @@ class Enemy(pygame.sprite.Sprite):
 
 class Wall(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, width = 32, height = 32):
+    def __init__(self, x, y, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('wall_small.png').convert_alpha()
+        self.image = pygame.image.load('wall.png').convert_alpha()
 
         # self.image = pygame.Surface((width, height))
         # self.image.fill((255,100,180))
@@ -412,12 +424,44 @@ class Wall(pygame.sprite.Sprite):
 
         window.blit(self.image,(self.rect.x, self.rect.y))
 
+class InvisibleWall(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width = 64, height = 64):
+
+        super().__init__()
+        self.image = pygame.image.load('wall.png').convert_alpha()
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
 class Treasure(pygame.sprite.Sprite):
 
     def __init__(self, x, y, width = 64, height = 64):
 
         super().__init__()
         self.image = pygame.image.load('foodA.png').convert_alpha()
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+class Heart(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width = 32, height = 32):
+
+        super().__init__()
+        self.image = pygame.image.load('images/features/heart.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -525,6 +569,8 @@ class MiniMap(object):
 
         self.bg = pygame.Surface((self.width - 20, self.height - 20))
         self.bg.fill((0,0,0))
+        self.bg1 = pygame.Surface((160, 160))
+        self.bg1.fill((0,0,0))
 
         self.rect.x = win_width - self.width
         self.rect.y = win_height - self.height
@@ -532,6 +578,7 @@ class MiniMap(object):
     def draw(self, window):
         window.blit(self.bg,(self.rect.x + 10, self.rect.y + 10))
         window.blit(self.image,(self.rect.x, self.rect.y))
+        window.blit(self.bg1,(self.rect.x + 15, self.rect.y + 15))
 
 class MiniWall(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -555,8 +602,8 @@ class MiniPlayer (object):
         self.win_height = win_height
 
     def update(self, player_abs_x, player_abs_y):
-        mini_x = 150 / (32 * 50) * player_abs_x
-        mini_y = 150 / (32 * 50) * player_abs_y
+        mini_x = 150 / (64 * 50) * player_abs_x
+        mini_y = 150 / (64 * 50) * player_abs_y
 
         self.rect.x = self.win_width - 170 + mini_x
         self.rect.y = self.win_height - 170 + mini_y
@@ -573,13 +620,13 @@ class Fog(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
     def update(self, player_x, player_y):
-        self.rect.centerx = player_x + 32
-        self.rect.centery = player_y + 32
+        self.rect.centerx = player_x + 16
+        self.rect.centery = player_y + 16
 
 # Initialize all objects relevant to the game.
 def create_instances():
     global current_level, running, player, player_group, miniMap, miniPlayer, miniWalls_group, fog_group
-    global walls_group, enemies_group, treasures_group, portal_group, traps_group, spikes_group
+    global walls_group, invisibleWalls_group, enemies_group, treasures_group, hearts_group, portal_group, traps_group, spikes_group
     global win_width, win_height
 
     current_level = 0
@@ -590,11 +637,13 @@ def create_instances():
     player_group.add(player)
 
     walls_group = pygame.sprite.Group()
+    invisibleWalls_group = pygame.sprite.Group()
     enemies_group = pygame.sprite.Group()
     treasures_group = pygame.sprite.Group()
     portal_group = pygame.sprite.Group()
     traps_group = pygame.sprite.Group()
     spikes_group = pygame.sprite.Group()
+    hearts_group = pygame.sprite.Group()
 
     fog_group = pygame.sprite.Group()
     fog_group.add(Fog())
@@ -631,12 +680,18 @@ def run_viewbox(player_x, player_y):
     if (dx != 0 or dy != 0):
         for wall in walls_group:
             wall.shift_world(dx, dy)
+        
+        for wall in invisibleWalls_group:
+            wall.shift_world(dx, dy)
 
         for enemy in enemies_group:
             enemy.shift_world(dx, dy)
 
         for treasure in treasures_group:
             treasure.shift_world(dx, dy)
+        
+        for heart in hearts_group:
+            heart.shift_world(dx, dy)
 
         for portal in portal_group:
             portal.shift_world(dx, dy)
@@ -669,7 +724,7 @@ def define_maze():
     "XX   XXXXXXXXXXXXXX     XXXXXXXXXXXXXXXX  U XXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XX   XXXP    C   U               XXX    T      XXX",
+    "XX   XXXP    C  U H              XXX    T      XXX",
     "XX   XXX          S              XXX           XXX",
     "XX   XXX       T                 XXX   XXXXX   XXX",
     "XX   XXX                         XXX   XXXXX   XXX",
@@ -866,18 +921,23 @@ def define_maze():
     ]
 
     levels = [level_1, level_2, level_3, level_4]
+
 def setup_maze(current_level):
 
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
             character = levels[current_level][y][x]
-            pos_x = (x*32)
-            pos_y = (y*32)
+            pos_x = (x*64)
+            pos_y = (y*64)
 
             if character == "X":
                 #Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
                 miniWalls_group.add(MiniWall(win_width - 170 + (x * 3), win_height - 170 + (y * 3)))
+            
+            elif character == "I":
+                #Update wall coordinates
+                invisibleWalls_group.add(InvisibleWall(pos_x, pos_y))
 
             elif character == "P":
                 player.set_position(pos_x, pos_y)
@@ -891,6 +951,10 @@ def setup_maze(current_level):
             elif character == "T":
                 #Update treasure coordinates
                 treasures_group.add(Treasure(pos_x, pos_y))
+            
+            elif character == "H":
+                #Update treasure coordinates
+                hearts_group.add(Heart(pos_x, pos_y))
 
             elif character == "U":
                 #Update portal coordinates
@@ -907,8 +971,10 @@ def setup_maze(current_level):
 # Empty the maze
 def clear_maze():
     walls_group.empty()
+    invisibleWalls_group.empty()
     enemies_group.empty()
     treasures_group.empty()
+    hearts_group.empty()
     traps_group.empty()
     spikes_group.empty()
     portal_group.empty()
@@ -917,19 +983,17 @@ def clear_maze():
     player.isNextStage = False
 
 def nextStage(isNextStage):
-    global current_level
+    global current_level, isGameOver
     if isNextStage:
         current_level += 1
         print(current_level)
         if current_level == 4:
-            pygame.quit()
+            current_level = 0
         clear_maze()
         setup_maze(current_level)
 
 #Initialize Game
 #######################################################################################
-
-
 
 # Load images
 ratImageLists = loadImageListInDict('images/rat')
@@ -939,6 +1003,10 @@ ghostList = loadImageInList('images/ghost')
 portalList = loadImageInList('images/portal')
 spikeList = loadImageInList('images/spike')
 
+
+loadingScreen = pygame.image.load('images/backgrounds/loadingScreen.png')
+heartShape = pygame.image.load('images/features/heart_2.png')
+
 # Load musics & sound
 music = pygame.mixer.music.load(os.path.join('audios','Background_Music.mp3'))
 pygame.mixer.music.play(-1)
@@ -946,15 +1014,8 @@ food_collision = pygame.mixer.Sound(os.path.join('audios','Food_Collision.wav'))
 enemy_collision = pygame.mixer.Sound(os.path.join('audios','Enemy_Collision.wav'))
 portal_collision = pygame.mixer.Sound(os.path.join('audios','Portal_Collision.wav'))
 
-
-# Initialise the maze
-create_instances()
-define_maze()
-setup_maze(current_level)
-
-#fading
-i = 0
-window.fill((0,0,0))
+# Load font
+font1 = pygame.font.SysFont('comicsans',32,True,True)
 
 ################################################################################
 """
@@ -965,6 +1026,19 @@ window.fill((0,0,0))
     The queue is a regular queue of pygame.event.EventTypepygame object for representing SDL events event objects,
     there are a variety of ways to access
 """
+
+# Initialise the maze
+
+loading = True;
+isGameOver = False;
+create_instances()
+define_maze()
+setup_maze(current_level)
+
+#fading
+i = 0
+window.fill((0,0,0))
+
 while running:
     for event in pygame.event.get():
         if(event.type == pygame.QUIT) or \
@@ -975,67 +1049,97 @@ while running:
     # Update objects
 
     # player move -> check for collision with treasure / portal / enemy
-    player_group.update(walls_group, treasures_group, portal_group, traps_group, enemies_group, spikes_group)
+    if loading:
+        window.blit(loadingScreen, (0,0))
+        for event in pygame.event.get():
+            if(event.type == pygame.KEYDOWN):
+                loading = False
+    
+    elif isGameOver:
+        pass
 
-    # from player group update -> check if collide with portal to advance to next stage
-    #if player.isNextStage != True:
-    portal_group.update()
-    enemies_group.update(walls_group)
-    traps_group.update(player.rect.centerx, player.rect.centery)
-    spikes_group.update()
+    else:
+        if (not player.isNextStage):
+            player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
 
-    fog_group.update(player.rect.x, player.rect.y)
-    miniPlayer.update(player.abs_x, player.abs_y)
+            # from player group update -> check if collide with portal to advance to next stage
 
-    # Update view camera
-    run_viewbox(player.rect.x, player.rect.y)
-    # Draw
+            portal_group.update()
+            enemies_group.update(walls_group, invisibleWalls_group)
+            traps_group.update(player.rect.centerx, player.rect.centery)
+            spikes_group.update()
 
-    # Fill background with black color
-    window.fill((0,0,0))
+            fog_group.update(player.rect.x, player.rect.y)
+            miniPlayer.update(player.abs_x, player.abs_y)
 
-    for wall in walls_group:
-        if (wall.rect.x < win_width) and (wall.rect.y < win_height):
-            wall.draw(window)
+            # Update view camera
+            run_viewbox(player.rect.x, player.rect.y)
+            # Draw
 
-    portal_group.draw(window)
-    treasures_group.draw(window)
-    if player.isNextStage != True:
-        player_group.draw(window)
-    enemies_group.draw(window)
-    traps_group.draw(window)
-    spikes_group.draw(window)
+            # Fill background with black color
+            window.fill((0,0,0))
 
-    # Implement fog from level 2 onwards
-    if current_level >= 1:
-        fog_group.draw(window)
+            for wall in walls_group:
+                if (wall.rect.x < win_width) and (wall.rect.y < win_height):
+                    wall.draw(window)
 
-    if player.isNextStage != True:
+        if player.isNextStage != True:
+            player_group.draw(window)
+        
+        portal_group.draw(window)
+        treasures_group.draw(window)
+        hearts_group.draw(window)
+        enemies_group.draw(window)
+        traps_group.draw(window)
+        spikes_group.draw(window)
+
+        # Implement fog from level 2 onwards
+        if current_level >= 1:
+            fog_group.draw(window)
+
         miniMap.draw(window)
         miniWalls_group.draw(window)
         miniPlayer.draw(window)
 
-    # fading animation
-    if player.isNextStage == True:
-        fade.set_alpha(i)
-        window.blit(fade, (0,0))
-        pygame.display.update()
-        pygame.time.delay(2)
-        i += 15
-        if i == 255:
-            i = 0
-            nextStage(player.isNextStage)
-            continue
+        lifeLeftText = font1.render(' X '+ str(player.live),1,(255,250,250))
+        scoreText = font1.render('Score: ' + str(player.score), 1, (255,250,250))
+        window.blit(heartShape,(25,35))
+        window.blit(lifeLeftText,(50,40))
+        window.blit(scoreText, (30, 70))
+        
+        # fading animation
+        if player.isNextStage == True:
+            fade.set_alpha(i)
+            window.blit(fade, (0,0))
+            pygame.display.update()
+            pygame.time.delay(2)
+            i += 15
+            if i == 255:
+                i = 0
+                nextStage(player.isNextStage)
+                continue
 
-
-    """ this line calls upon OS to restart the execution of python script when player clicks on try again.
-        Wait for XK to implement the lives == 0 part to call the game over ! """
-    # os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
-
-
+        if player.live == 0:
+            isGameOver = True;
 
     # Delay & Update Screen
     pygame.display.flip()
     clock.tick_busy_loop(fps)
+
+
+    # test to Restart script once the player clicks try again 
+    """
+    if i == 5:
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path + "/helloWorld.py"
+        print(sys.executable)
+        print(__file__)
+        print(path)
+        print(sys.argv)
+        os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
+    i += 1
+    print(i)
+    """
+
 
 pygame.quit()

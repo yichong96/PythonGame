@@ -20,6 +20,8 @@ The depth argument represents the number of bits to use for color.
 The Surface that gets returned can be drawn to like a regular Surface but changes will eventually be seen on the monitor.
 """
 window = pygame.display.set_mode(win_size)
+fade = pygame.Surface((win_width, win_height))
+fade.fill((0,0,0))
 
 
 # set_caption(title, icontitle=None) -> None
@@ -132,7 +134,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         # If any direction key is pressed
-        if(keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+        if(not self.isNextStage and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN])):
 
             # account for horizontal movement if pressed left key
             if(keys[pygame.K_LEFT]):
@@ -722,7 +724,7 @@ def define_maze():
     "XX   XXXXXXXXXXXXXX     XXXXXXXXXXXXXXXX  U XXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XX   XXXP    C    H              XXX    T      XXX",
+    "XX   XXXP    C  U H              XXX    T      XXX",
     "XX   XXX          S              XXX           XXX",
     "XX   XXX       T                 XXX   XXXXX   XXX",
     "XX   XXX                         XXX   XXXXX   XXX",
@@ -981,12 +983,12 @@ def clear_maze():
     player.isNextStage = False
 
 def nextStage(isNextStage):
-    global current_level
+    global current_level, isGameOver
     if isNextStage:
         current_level += 1
         print(current_level)
         if current_level == 4:
-            pygame.quit()
+            current_level = 0
         clear_maze()
         setup_maze(current_level)
 
@@ -1026,12 +1028,16 @@ font1 = pygame.font.SysFont('comicsans',32,True,True)
 """
 
 # Initialise the maze
-i = 0
 
 loading = True;
+isGameOver = False;
 create_instances()
 define_maze()
 setup_maze(current_level)
+
+#fading
+i = 0
+window.fill((0,0,0))
 
 while running:
     for event in pygame.event.get():
@@ -1048,37 +1054,41 @@ while running:
         for event in pygame.event.get():
             if(event.type == pygame.KEYDOWN):
                 loading = False
-
+    
+    elif isGameOver:
+        pass
 
     else:
-        player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
+        if (not player.isNextStage):
+            player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
 
-        # from player group update -> check if collide with portal to advance to next stage
-        nextStage(player.isNextStage)
+            # from player group update -> check if collide with portal to advance to next stage
 
-        portal_group.update()
-        enemies_group.update(walls_group, invisibleWalls_group)
-        traps_group.update(player.rect.centerx, player.rect.centery)
-        spikes_group.update()
+            portal_group.update()
+            enemies_group.update(walls_group, invisibleWalls_group)
+            traps_group.update(player.rect.centerx, player.rect.centery)
+            spikes_group.update()
 
-        fog_group.update(player.rect.x, player.rect.y)
-        miniPlayer.update(player.abs_x, player.abs_y)
+            fog_group.update(player.rect.x, player.rect.y)
+            miniPlayer.update(player.abs_x, player.abs_y)
 
-        # Update view camera
-        run_viewbox(player.rect.x, player.rect.y)
-        # Draw
+            # Update view camera
+            run_viewbox(player.rect.x, player.rect.y)
+            # Draw
 
-        # Fill background with black color
-        window.fill((0,0,0))
+            # Fill background with black color
+            window.fill((0,0,0))
 
-        for wall in walls_group:
-            if (wall.rect.x < win_width) and (wall.rect.y < win_height):
-                wall.draw(window)
+            for wall in walls_group:
+                if (wall.rect.x < win_width) and (wall.rect.y < win_height):
+                    wall.draw(window)
 
+        if player.isNextStage != True:
+            player_group.draw(window)
+        
         portal_group.draw(window)
         treasures_group.draw(window)
         hearts_group.draw(window)
-        player_group.draw(window)
         enemies_group.draw(window)
         traps_group.draw(window)
         spikes_group.draw(window)
@@ -1096,7 +1106,18 @@ while running:
         window.blit(heartShape,(25,35))
         window.blit(lifeLeftText,(50,40))
         window.blit(scoreText, (30, 70))
-
+        
+        # fading animation
+        if player.isNextStage == True:
+            fade.set_alpha(i)
+            window.blit(fade, (0,0))
+            pygame.display.update()
+            pygame.time.delay(2)
+            i += 15
+            if i == 255:
+                i = 0
+                nextStage(player.isNextStage)
+                continue
 
     # Delay & Update Screen
     pygame.display.flip()

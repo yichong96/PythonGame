@@ -1,6 +1,7 @@
 import pygame, sys, time
-from os import path
+
 import pygame_textinput
+import os
 
 
 # File I/O
@@ -321,14 +322,14 @@ class GameOverWindow:
                     sys.exit()
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.myTryAgainRect.collidepoint(pygame.mouse.get_pos()):
+                    if self.mySaveRect.collidepoint(pygame.mouse.get_pos()):
                         assert textinput.get_text() != ""
                         user = textinput.get_text()
                         append_line = user + ", " + str(self.score) + ", " + str(self.level)
                         self.write_to_file(self.leaderBoardFile, append_line)
 
-                    elif self.mySaveRect.collidepoint(pygame.mouse.get_pos()):
-                        print("my save score")
+                    elif self.myTryAgainRect.collidepoint(pygame.mouse.get_pos()):
+                        os.execv(sys.executable, [sys.executable, "Maze_v5.py"] + sys.argv)
 
 
             if textinput.update(events):

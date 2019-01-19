@@ -1,4 +1,4 @@
-import pygame, os, random, math, sys
+import pygame, os, random, math, sys, testWin
 
 # Set up window
 #####################################################################
@@ -7,6 +7,8 @@ pygame.init()
  # size of the game window
 win_width, win_height = 1280, 720
 
+# Font for game over window
+FONT = "freesandsbold.ttf"
 
 # win_size = (win_width, win_height)
 win_size = win_width, win_height
@@ -96,7 +98,7 @@ class Player(pygame.sprite.Sprite):
         self.invulnerable = False
         self.invulnerable_count = 0
 
-        self.live = 10
+        self.live = 1
         self.score = 0
 
     def set_position(self, x, y):
@@ -279,7 +281,7 @@ class Player(pygame.sprite.Sprite):
         if (pygame.sprite.spritecollide(self, treasures, True)):
             self.score += 100
             food_collision.play()
-            
+
 
     def isCollided_with_hearts(self, hearts):
         if (pygame.sprite.spritecollide(self, hearts, True)):
@@ -680,7 +682,7 @@ def run_viewbox(player_x, player_y):
     if (dx != 0 or dy != 0):
         for wall in walls_group:
             wall.shift_world(dx, dy)
-        
+
         for wall in invisibleWalls_group:
             wall.shift_world(dx, dy)
 
@@ -689,7 +691,7 @@ def run_viewbox(player_x, player_y):
 
         for treasure in treasures_group:
             treasure.shift_world(dx, dy)
-        
+
         for heart in hearts_group:
             heart.shift_world(dx, dy)
 
@@ -934,7 +936,7 @@ def setup_maze(current_level):
                 #Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
                 miniWalls_group.add(MiniWall(win_width - 170 + (x * 3), win_height - 170 + (y * 3)))
-            
+
             elif character == "I":
                 #Update wall coordinates
                 invisibleWalls_group.add(InvisibleWall(pos_x, pos_y))
@@ -951,7 +953,7 @@ def setup_maze(current_level):
             elif character == "T":
                 #Update treasure coordinates
                 treasures_group.add(Treasure(pos_x, pos_y))
-            
+
             elif character == "H":
                 #Update treasure coordinates
                 hearts_group.add(Heart(pos_x, pos_y))
@@ -1050,13 +1052,25 @@ while running:
 
     # player move -> check for collision with treasure / portal / enemy
     if loading:
-        window.blit(loadingScreen, (0,0))
-        for event in pygame.event.get():
-            if(event.type == pygame.KEYDOWN):
-                loading = False
-    
+        #print("hello1")
+        #window.blit(loadingScreen, (0,0))
+        breakLoop = True
+        while breakLoop:
+            window.blit(loadingScreen, (0,0))
+            pygame.display.flip()
+            for event in pygame.event.get():
+                print(event.type)
+                if(event.type == pygame.KEYDOWN):
+                    breakLoop = False
+                    #loading = False
+                    loading = False
+
+
+    #gameOverWindow = GameOverWindow(1024,768,FONT, "highscore.txt", 200, 4)
     elif isGameOver:
-        pass
+        #print(__file__)
+        gameOverWindow = testWin.GameOverWindow(win_width, win_height, FONT, "highscore.txt", player.score, current_level + 1)
+        gameOverWindow.run()
 
     else:
         if (not player.isNextStage):
@@ -1085,7 +1099,7 @@ while running:
 
         if player.isNextStage != True:
             player_group.draw(window)
-        
+
         portal_group.draw(window)
         treasures_group.draw(window)
         hearts_group.draw(window)
@@ -1106,7 +1120,7 @@ while running:
         window.blit(heartShape,(25,35))
         window.blit(lifeLeftText,(50,40))
         window.blit(scoreText, (30, 70))
-        
+
         # fading animation
         if player.isNextStage == True:
             fade.set_alpha(i)
@@ -1127,7 +1141,7 @@ while running:
     clock.tick_busy_loop(fps)
 
 
-    # test to Restart script once the player clicks try again 
+    # test to Restart script once the player clicks try again
     """
     if i == 5:
         path = os.path.dirname(os.path.abspath(__file__))

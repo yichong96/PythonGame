@@ -9,3 +9,4 @@ adi, 200, 4
 tuckchoy, 200, 4
 anand bhojan, 200, 4
 sim mong cheng, 200, 4
+holamola, 100, 1

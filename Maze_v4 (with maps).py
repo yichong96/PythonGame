@@ -5,7 +5,7 @@ import pygame, os, random, math, sys
 pygame.init()
 
  # size of the game window
-win_width, win_height = 1280, 728
+win_width, win_height = 1024, 768
 
 
 # win_size = (win_width, win_height)

@@ -1,4 +1,4 @@
-import pygame, os, random, math
+import pygame, os, random, math, sys
 
 # Set up window
 #####################################################################
@@ -87,7 +87,7 @@ class Player(pygame.sprite.Sprite):
         self.ghostImageList = ghostImageList
         self.isNextStage = False
         self.walkCount = 0
-        
+
         self.direction = 'S'
 
         self.ghostWalkCount = 0
@@ -183,14 +183,14 @@ class Player(pygame.sprite.Sprite):
         self.isCollided(collidable)
 
     def walkAnimation(self):
- 
+
         if self.invulnerable == False:
-           
+
             self.walkCount += 1
-            
+
             if self.walkCount >= 18:
                 self.walkCount = 0
-            
+
             if self.direction == 'E':
                 self.image = self.imageLists['east'][self.walkCount // 6]
             elif self.direction == 'N':
@@ -207,7 +207,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.imageLists['southwest'][self.walkCount // 6]
             elif self.direction == 'W':
                 self.image = self.imageLists['west'][self.walkCount // 6]
-        
+
         else:
             self.ghostWalkCount += 1
             if self.ghostWalkCount >= 36:
@@ -256,7 +256,7 @@ class Player(pygame.sprite.Sprite):
                 # Update Absoulte position
                 vDiff = collided_object.rect.top - self.rect.bottom
                 self.abs_y += vDiff
-                
+
                 # Update relative position
                 self.rect.bottom= collided_object.rect.top
                 self.vSpeed = 0
@@ -280,7 +280,7 @@ class Player(pygame.sprite.Sprite):
             if (self.rect.collidepoint(portal.rect.centerx, portal.rect.centery)):
                 portal_collision.play()
                 return True
-    
+
     def isCollided_with_damage_source(self, damage_source):
         collision_list = pygame.sprite.spritecollide(self, damage_source, False)
         for item in collision_list:
@@ -335,7 +335,7 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.dx = 0
             self.dy = 0
-        
+
         self.walkAnimation()
 
         self.rect.x += self.dx
@@ -345,7 +345,7 @@ class Enemy(pygame.sprite.Sprite):
         self.walkCount += 1
         if self.walkCount >= 6:
             self.walkCount = 0
-        
+
         if self.direction == 'up':
             self.image = self.imageLists['up'][self.walkCount // 2]
         elif self.direction == 'down':
@@ -464,7 +464,7 @@ class Trap(pygame.sprite.Sprite):
     def update(self, player_center_x, player_center_y):
         a = self.rect.centerx - player_center_x
         b = self.rect.centery - player_center_y
-        
+
         distance = math.sqrt((a ** 2) + (b **2))
 
         if distance <= 50:
@@ -573,9 +573,15 @@ class MiniPlayer (object):
         self.win_height = win_height
 
     def update(self, player_abs_x, player_abs_y):
+<<<<<<< HEAD
         mini_x = 150 / (64 * 50) * player_abs_x
         mini_y = 150 / (64 * 50) * player_abs_y
         
+=======
+        mini_x = 150 / (32 * 50) * player_abs_x
+        mini_y = 150 / (32 * 50) * player_abs_y
+
+>>>>>>> d3a373fbe4b7ce1f5ca0cfb3c634f9a8464774e8
         self.rect.x = self.win_width - 170 + mini_x
         self.rect.y = self.win_height - 170 + mini_y
 
@@ -665,13 +671,13 @@ def run_viewbox(player_x, player_y):
 
         for trap in traps_group:
             trap.shift_world(dx, dy)
-        
+
         for spike in spikes_group:
             spike.shift_world(dx, dy)
 
 def define_maze():
     global levels
-    level_1 = [
+        level_1 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   T   XXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    E    XXXXXX",
@@ -679,11 +685,11 @@ def define_maze():
     "XXXXXXXX    XXXXXXXXXXXXXXXXXXXXX   XXXXXXX    XXX",
     "XXXXXXXX    XXXXXXXXXXXXXXXXXXXX   XXXXXXXXXT  XXX",
     "XXXXXXXX    XXXXXXXXXXXXXXXXXXX   XXXXXXXXX   XXXX",
-    "XXXXXXX  E   XXXXXXXXXXXXXXXXX   XXXXXXXXX   XXXXX",
+    "XXXXXXX  E   XXXXXXXXXXXXXXXXXII XXXXXXXXXII XXXXX",
     "XXXXXX   XX   XXXXXXXXXXXXXXX   XXXXXXXXX   XXXXXX",
     "XXXXX   XXXX   XXXXXXXXXXXXX   XXXXXXXXX   XXXXXXX",
     "XXXX   XXXXXX   XXXXXXXXXXX   XXXXXXXXX   XXXXXXXX",
-    "XXX   XXXXXXXX   XXXXXXXXX   XXXXXXXXX   XXXXXXXXX",
+    "XXXII XXXXXXXX IIXXXXXXXXX   XXXXXXXXX   XXXXXXXXX",
     "XX   XXXXXXXXXX   XXXXXXX   XXXXXXXXX   XXXXXXXXXX",
     "XX   XXXXXXXXXXX   XXXXX   XXXXXXXXXX   XXXXXXXXXX",
     "XX   XXXXXXXXXXXX   XXX   XXXXXXXXXXX    XXXXXXXXX",
@@ -700,10 +706,10 @@ def define_maze():
     "XX   XXX                      TXX      XXXXX   XXX",
     "XXXT  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXX",
     "XXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXX",
-    "XXXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXX",
+    "XXXXX II XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXX",
     "XXXXXX                 T          XXXXXXXXXX  TXXX",
     "XXXXXXX               E            XXXXXXXXX   XXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXXXXXXX   XXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX IIXXXXXXXX   XXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXXXXXX   XXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXXXXX   XXX",
     "XXXXXXXXXXXXXXXXXXX                   XXXXXX   XXX",
@@ -728,14 +734,14 @@ def define_maze():
     level_2 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XU          XXXXXXXX   XXXXXXXX            XXXXXXX",
-    "X     E     XXXXXXX   XXXXXXXX          E   XXXXXX",
-    "XXXXXXXX    XXXXXX  EXXXXXXXXX XXXXXXXXXXX    XXXX",
+    "X     E     XXXXXXX   XXXXXXXX          E IIXXXXXX",
+    "XXXXXXXXIIIIXXXXXX  EXXXXXXXXXIXXXXXXXXXXX    XXXX",
     "XXXXXXXX    XXXXX   XXXXXXXXXX XT   XXXXXXX    XXX",
     "XXXXXXXX    XXXX   XXXXXXXXXXXX      XXXXXXX   XXX",
     "XXXXXXXX    XXX   XXXXXXXXXXXX   XX   XXXXXXX   XX",
-    "XXXXXXX     XX   XXXXXXXXXXXX   XXXX   XXXXXX   XX",
+    "XXXXXXX     XXIIIXXXXXXXXXXXX   XXXX   XXXXXX   XX",
     "XXXXXX       T     XXXXXXXXX   XXXXXX   XXXXX   XX",
-    "XXXXX   XXXXXXXXX  XXXXXXXX   XXXXXXXX   XXX  TXXX",
+    "XXXXX   XXXXXXXXXIIXXXXXXXX   XXXXXXXX   XXX  TXXX",
     "XXXX   XXXXXXXXXX  XXXXXXX   XXXXXXXXXX   X   XXXX",
     "XXX   XXXXXXXXXXX  XXXXXX   XXXXXXXXXXXX     XXXXX",
     "XX   XXXXXXXXXXXX  XXXXXX   XXXXXXXXXXXXX   XXXXXX",
@@ -749,21 +755,21 @@ def define_maze():
     "XX   XXXXXXXXXXXXXXXXXXXX   XXXXXXXXXXXXXXXXXXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXX   XXXXXXXXXXXXXXXXXXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXX   XXXXXXXXXXXXXXXXXXXXXX",
-    "XX   XXXXXXXXXX                                XXX",
-    "XX   XXXXXXXXXX                                XXX",
-    "XX   XXXXXXXXXX   XXXXXXXXXXXXXXXXXXXXXXXXXX   XXX",
+    "XX   XXXXXXXXXX                   E            XXX",
+    "XX   XXXXXXXXXX    E                           XXX",
+    "XX   XXXXXXXXXXIIIXXXXXXXXXXXXXXXXXXXXXXXXXXIIIXXX",
     "XXXT  XXXXXXXXXX   XXXXXXXXXXXXXXXXXXXXXXXXX   XXX",
     "XXXX    XXXXXXXXX   XXXXXXXXX  T  XXXXXXXXXX   XXX",
     "XXXXX    XXXXXXXXX   XXXXXXX   E   XXXXXXXXX   XXX",
-    "XXXXXX    XXXXXXXXX   XXXXXX   XX              XXX",
+    "XXXXXX    XXXXXXXXX   XXXXXXIIIXXII            XXX",
     "XXXXXXX    XXXXXXXXX   XXXXX   XX      T       XXX",
-    "XXX   XXX XXXXXXXXXXX          XX    XXXXXXX   XXX",
+    "XXX   XXX  XXXXXXXXXX          XX    XXXXXXX   XXX",
     "XXX   XXX         XXXX                XXXXXX   XXX",
     "XXX   XXXXXXXXXX  XXXXXXXXXXXXXXXXX   XXXXXX   XXX",
     "XXXX   XXXXXXXXX  XXXXXXXXXXXXXXXXX   XXXXXX   XXX",
     "XXXXX   XXXXXXXX  XXXXXXXXXXXXXXXXX   XXXXXX   XXX",
     "XXXXXX   XXXXXXX    XXXXXXXXXXXXXX   XXXXXXX   XXX",
-    "XXXXXXX    T        XXXXXXXXXXXX   XXXXXXXXX   XXX",
+    "XXXXXXX    T        XXXXXXXXXXXX    XXXXXXXX   XXX",
     "XXXXXXXXX       XX   XXXXXXXXXXX    XXXXXXXX   XXX",
     "XXXXXXXX       XXXX  TXXXXXXXXX   XXXXXXXXXX   XXX",
     "XXXXXXX   XXXXXXXXXX              XXXXXXXXXX   XXX",
@@ -773,117 +779,117 @@ def define_maze():
     "XXXX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   XXXXX",
     "XXXX   XXXXXXXXX             XXXXXXXXXXXX   XXXXXX",
     "XXXX   XXXXXXXXX              XXXXXXXXX    XXXXXXX",
-    "XXXX   XXXXXXXXX   XXXXXXXXX   XXXXXXX   XXXXXXXXX",
+    "XXXXIIIXXXXXXXXXIIIXXXXXXXXX   XXXXXXX   XXXXXXXXX",
     "XXXX               XXXXXXXXXX            XXXXXXXX",
-    "XXXX               XXXXXXXXXXX      T    XXXXXXXXX",
+    "XXXX     E         XXXXXXXXXXX      T    XXXXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     level_3 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XP         E       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "X                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XP         E I     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "X            I     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXX S   XXT                   E       X",
-    "XXXXXXXXXXXXXX  S               E                X",
+    "XXXXXXXXXXXXXX  S  I            E                X",
     "X           TX     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XE                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XE           I     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "X  XXXXXXXXXXX     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "X  XXXXXXXXXXX     XXXXXX         T              X",
-    "XXX       E        XXXXXX S       E              X",
+    "XXXI      E   I    XXXXXXISII     E          II  X",
     "X                 TXXXXXX    XXXXXXXXXXXXXXXX  XXX",
     "X  S XXXXXXXXXXXXXXXXXXXE   XXXXXXXXXXXXXXXXX  XXX",
-    "X   XXXXXXXXXXXXXXT       XXXXXXXXXXXXXXXXXXX  XXX",
-    "X  XXXXXXXXXXXXXXX      XXXX                S  XXX",
-    "X EXXXXXXXXXXXXXXX     XXXXX     E             XXX",
+    "X   XXXXXXXXXXXXXXT     IIXXXXXXXXXXXXXXXXXXX  XXX",
+    "X IXXXXXXXXXXXXXXX      XXXX                S  XXX",
+    "X EXXXXXXXXXXXXXXX     XXXXX  I  E          I  XXX",
     "X  XXXXXXXXXXXXXXX    XX       TXXXXXXXXXXXXX  XXX",
-    "X  XXXXXXXXXXXXXXX   XXX  XXXXXXX   XXXXXXXXXT XXX",
+    "X IXXXXXXXXXXXXXXX   XXX  XXXXXXX   XXXXXXXXXT XXX",
     "X                 S  XXX  XXXXXXX   XXXXXXXXX  XXX",
-    "X                  E XXX      EXX   XXXXXXXXX  XXX",
+    "X       I          E XXX   I  EXX   XXXXXXXXXIIXXX",
     "X  XXXXXXXXXXXXXXXXXXXXXXXXX   XX  E           XXX",
     "X TXXXX                   XX   XX   E           XX",
     "X  XXXX                 E XX   XXXXXXXXXXXXXXXXXXX",
-    "X  XXXXXXXXXXXXXXXXXXX    XX   XXXXXXXXXXXXXXXXXXX",
+    "X  XXXXXXXXXXXXXXXXXXXIIIIXX   XXXXXXXXXXXXXXXXXXX",
     "X  XXXXXXXXXXXXXXXXXXX    XXES XXXXXXXXXXXXXXXXXXX",
-    "X                         XXXX                 TXX",
-    "X                 E       XXXXXE                XX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX",
-    "XE        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX",
+    "X                         XXXXI                TXX",
+    "X       I         E       XXXXXE                XX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXIIXX",
+    "X         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX",
     "XXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX",
-    "XXXXXXXXX       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX",
-    "XXXXXXXXXXXXXXX  XXXXXXXXXX        E        S   XX",
-    "XX         XXXXX  XXXXXXXXX          E          XX",
-    "XXEXXXXXXX XXXXX          XX  XXXXXXXXXXXXXXXX  XX",
+    "XXXXXXXXX  E    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX",
+    "XXXXXXXXXXXXXXXI XXXXXXXXXX        E        SI  XX",
+    "XX         XXXXX  XXXXXXXXX          E       I  XX",
+    "XXEXXXXXXX XXXXX          XXIIXXXXXXXXXXXXXXXX  XX",
     "XX XXXXXXXT XXXXXXXXXXXX  XX  XXXXXXXXXXXXXXXXX XX",
     "XXU XXXXXX  XXXXXXXXXXX  XXX   XXXXXXXXXXXXXXXT XX",
     "XXXXXXXXXX  XXXXXXXXXXXXT XXX   XXXXXXXXX  XXXEEXX",
-    "XXXXXXXXXX  XXXXXXXXXXXX  XXXX   XXXXXXXX  XXX  XX",
-    "XXXT        S         TS  XXXXX   XXXXXXX  XXX  XX",
-    "XXX  E                    XXXXX     E      XXX  XX",
+    "XXXXXXXXXX  XXXXXXXXXXXX  XXXX I XXXXXXXX  XXX  XX",
+    "XXXT      I S         TS  XXXXX   XXXXXXX  XXX  XX",
+    "XXX  E    I               XXXXX     E      XXX  XX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXEXXXXXXXXXXXXXXXXXXXX  XX",
-    "X                     XX                   TS   XX",
-    "X  XXXXXXXXXXXXXXXXX  XX                   E    XX",
+    "X                     XX                   TSI  XX",
+    "X  XXXXXXXXXXXXXXXXX  XX                   E I  XX",
     "X  XX            EXX  XXXXXXXXXX  XXXXXXXXXXXX  XX",
     "X  XX XXXXXXXXXXX XX  XXXXXXXXXT XXXXXXXXXXXXX  XX",
     "X  XX XXXXXXXXXXX XX  XXXXXXXX  XXXXXXXXXXXXXX  XX",
     "X  XX XXXXXXXXXXX XX  XXXXXXX  XXXXXXXXXXXXXXX  XX",
-    "X  XX XXXXXXXXXXX XX  XXXXXX  XXXXXXXXXXXXXXXX  XX",
-    "X  XX XXXXXXXXXXX XX     E   S                  XX",
-    "X  XX XXXXXXXXXXX XX         E                 TXX",
+    "X  XX XXXXXXXXXXX XXIIXXXXXX  XXXXXXXXXXXXXXXX  XX",
+    "X  XX XXXXXXXXXXX XX     E   S       I          XX",
+    "XIIXX XXXXXXXXXXX XX         E       I         TXX",
     "X                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
     level_4 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XP           E                  XXXXXX           X",
+    "XP     I     E       I          XXXXXX           X",
     "X                               XXXXXX           X",
     "X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X",
-    "X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X",
-    "X  XX          E             XXT            CXX  X",
-    "X  XX         S              XX              XX  X",
+    "XIIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X",
+    "X  XX    I     E      I      XXT            CXX  X",
+    "X  XX         S              XX  I  E     I  XX  X",
     "X EXX SXXXXXXXXXXXXXC XXXXXXXXXXXXX  XXXXXXS XX SX",
-    "X  XX  XXXXXXXXXXXXX  XXXXXXXXXXXXXS XXXXXX  XX  X",
+    "X  XX  XXXXXXXXXXXXXIIXXXXXXXXXXXXXS XXXXXX  XX  X",
     "XS XX  XX      E                 XX      XX  XX  X",
     "X  XX  XX  E                     XX      XX  XXS X",
-    "X  XX  XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXE XX  X",
     "X  XX  XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX  XX  X",
-    "X  XX  XX  XX           E  S          T  XX      X",
-    "X  XX  XX  XX          S      CS         XX   E  X",
+    "X  XX  XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXIIXX  X",
+    "X  XX  XX  XX   I       E IS          T  XX    I X",
+    "X  XX  XX  XX          S      CS         XX   EI X",
+    "X  XXIIXX  XX  XXXXXXXXXXXXXXXXXXXX  XX  XXIIXX  X",
     "X  XX  XX  XX  XXXXXXXXXXXXXXXXXXXX  XX  XX  XX  X",
-    "X  XX  XX  XX  XXXXXXXXXXXXXXXXXXXX  XX  XX  XX  X",
-    "X  XX  XX  XX  XX            XX  XX  XX  XXT XX  X",
-    "X  XX  XX  XX  XX   E      X XX  XX  XX  XXE XX  X",
+    "XIIXX  XX  XX  XX            XX  XX  XXS XXT XX  X",
+    "X  XX  XX  XX  XXII E      X XX  XX  XX  XXE XX  X",
     "X  XX  XXXXXX  XXS XX  XXXX XXX  XX  XX  XX  XX  X",
     "X  XX  XXXXXX  XX  XX XXXXX XXX  XX  XX  XX  XX  X",
-    "X  XXE XX      XX  XX XXXXX  XX  XXXXXX  XX  XXS X",
-    "X  XX  XX      XX  XX  X  X  XX  XXXXXX  XX  XX  X",
+    "X  XXE XX   I  XX  XX XXXXX  XX  XXXXXX  XX  XXS X",
+    "X  XX  XX   I  XX  XX  X  X  XXIIXXXXXX  XX  XX  X",
     "X  XX  XX SXX  XX  XXX  SX   XX  E   XXXXXX EXX SX",
-    "X  XX  XX  XX  XX  XXCX  X X XX  X   XXXXXX  XX  X",
-    "X  XX  XXS XX  XX  XX   X X  XX  XX  XX  XXXXXXS X",
+    "X  XXIIXX  XX  XX  XXCX  X X XXIIX IIXXXXXX  XX  X",
+    "X  XX  XXS XXIIXX  XX   X X  XX  XX  XX  XXXXXXS X",
     "X  XX  XX  XXE XX  XXTXX    XXX  XX  XXC XXXXXX  X",
-    "X  XX  XX SXX  XX  XX     X  XX  XXS     XX  XX TX",
-    "X  XX  XX  XX  XX  XX   X X      XX      XX  XX  X",
-    "X  XX  XX  XX  XX  XX    X   X   XX  XX      XX  X",
-    "X  XX  XX  XX  XX  XX  XXXXXXXXXXXXC XXE     XX  X",
-    "X  XX  XX  XX  XX  XXXXXXXXXXXXXXXXE XX  XX  XX  X",
-    "X  XX  XX  XX  XX   E            XX  XX  XX SXX  X",
+    "X  XX  XX SXX  XX  XX     X  XX  XXS  I  XX  XX TX",
+    "X  XX  XX  XX  XX  XX   X X      XX   I  XX  XX  X",
+    "X  XX  XX  XX  XX  XX    X   X   XX  XX   I  XX  X",
+    "X  XX  XX  XX  XX  XX  XXXXXXXXXXXXC XXE  I  XX  X",
+    "X  XX  XX  XX  XXIIXXXXXXXXXXXXXXXXE XXIIXX  XX  X",
+    "X  XX  XX  XX  XX   E       I    XX  XX  XX SXX  X",
     "X  XX  XX  XX EXX                XX  XX  XX      X",
     "X  XX  XX EXX  XXXXXXXXXXXXX SXXXXXXXXXXXXX      X",
-    "X  XX  XX  XX  XXXXXXXXXXXXX SXXXXXXXXXXXXXC XX  X",
-    "X  XX  XX  XX        XX            E     XX  XX EX",
+    "X  XX  XX  XX  XXXXXXXXXXXXXISXXXXXXXXXXXXXC XXIIX",
+    "X  XX  XX  XX  I     XX            E     XX  XX EX",
     "X  XX  XX  XX  C     XX      E           XX  XX  X",
-    "X  XX  XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXX  X",
+    "X  XX  XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXIIXXXXXX  X",
     "X  XX  XXE XXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXX",
-    "X  XX  XX        XX       E        XX    C   XXXXX",
+    "X  XX  XXII      XX       E        XX    C   XXXXX",
     "X  XX  XX        XXC               XXE       XXXXX",
-    "X  XX  XX  XXXXXXXXXXXXXXXXXXX  XXXXXXXXXXX  XXXXX",
+    "X  XX  XX  XXXXXXXXXXXXXXXXXXXIIXXXXXXXXXXXIIXXXXX",
     "X  XX  XX  XXXXXXXXXXXXXXXXXXX  XXXXXXXXXXX  XXC X",
-    "X  SS  XX       E         T          XX      XX  X",
-    "X     TXX                 S          XX      XX  X",
+    "X  SS  XX  I    E         T  I       XX      XX  X",
+    "X     TXX                 S          XXE     XX  X",
     "X  XXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXX SXXXX  X",
-    "X  XXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXE XXXX  X",
-    "X                                  XXXX          X",
-    "X                     E            XXXXT      TU X",
+    "X  XXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXIIXXXX  X",
+    "X                                  XXXX   E      X",
+    "X         I           E      I     XXXXT      TU X",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     ]
 
@@ -922,11 +928,11 @@ def setup_maze(current_level):
             elif character == "U":
                 #Update portal coordinates
                 portal_group.add(Portal(pos_x, pos_y, portalList))
-            
+
             elif character == "C":
                 #Update trap coordinates
                 traps_group.add(Trap(pos_x, pos_y))
-            
+
             elif character == "S":
                 #Update spike coordinates
                 spikes_group.add(Spike(pos_x, pos_y, spikeList))
@@ -973,10 +979,7 @@ enemy_collision = pygame.mixer.Sound(os.path.join('audios','Enemy_Collision.wav'
 portal_collision = pygame.mixer.Sound(os.path.join('audios','Portal_Collision.wav'))
 
 
-# Initialise the maze
-create_instances()
-define_maze()
-setup_maze(current_level)
+
 
 ################################################################################
 """
@@ -987,6 +990,14 @@ setup_maze(current_level)
     The queue is a regular queue of pygame.event.EventTypepygame object for representing SDL events event objects,
     there are a variety of ways to access
 """
+
+# Initialise the maze
+i = 0
+
+create_instances()
+define_maze()
+setup_maze(current_level)
+
 while running:
     for event in pygame.event.get():
         if(event.type == pygame.QUIT) or \
@@ -1001,7 +1012,7 @@ while running:
 
     # from player group update -> check if collide with portal to advance to next stage
     nextStage(player.isNextStage)
-    
+
     portal_group.update()
     enemies_group.update(walls_group, invisibleWalls_group)
     traps_group.update(player.rect.centerx, player.rect.centery)
@@ -1009,7 +1020,7 @@ while running:
 
     fog_group.update(player.rect.x, player.rect.y)
     miniPlayer.update(player.abs_x, player.abs_y)
-    
+
     # Update view camera
     run_viewbox(player.rect.x, player.rect.y)
     # Draw
@@ -1020,7 +1031,7 @@ while running:
     for wall in walls_group:
         if (wall.rect.x < win_width) and (wall.rect.y < win_height):
             wall.draw(window)
-    
+
     portal_group.draw(window)
     treasures_group.draw(window)
     player_group.draw(window)
@@ -1039,5 +1050,21 @@ while running:
     # Delay & Update Screen
     pygame.display.flip()
     clock.tick_busy_loop(fps)
+
+
+    # test to Restart script once the player clicks try again 
+    """
+    if i == 5:
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path + "/helloWorld.py"
+        print(sys.executable)
+        print(__file__)
+        print(path)
+        print(sys.argv)
+        os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
+    i += 1
+    print(i)
+    """
+
 
 pygame.quit()

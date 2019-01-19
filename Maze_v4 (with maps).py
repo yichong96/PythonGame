@@ -94,6 +94,9 @@ class Player(pygame.sprite.Sprite):
         self.invulnerable = False
         self.invulnerable_count = 0
 
+        self.live = 10
+        self.score = 0
+
     def set_position(self, x, y):
         self.rect.x = x
         self.rect.y = y
@@ -103,10 +106,11 @@ class Player(pygame.sprite.Sprite):
         self.abs_y = y
 
     # update function, every loop this function will be called
-    def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(),\
+    def update(self, collidable = pygame.sprite.Group(), treasures = pygame.sprite.Group(), hearts = pygame.sprite.Group(),\
                portal = pygame.sprite.Group(), traps = pygame.sprite.Group(), enemies = pygame.sprite.Group(), spikes = pygame.sprite.Group()):
         self.move(collidable)
         self.isCollided_with_treasures(treasures)
+        self.isCollided_with_hearts(hearts)
         self.isNextStage = self.isCollided_with_portal(portal)
         if self.invulnerable:
             if self.invulnerable_count >= 90:
@@ -272,6 +276,13 @@ class Player(pygame.sprite.Sprite):
 
     def isCollided_with_treasures(self, treasures):
         if (pygame.sprite.spritecollide(self, treasures, True)):
+            self.score += 100
+            food_collision.play()
+            
+
+    def isCollided_with_hearts(self, hearts):
+        if (pygame.sprite.spritecollide(self, hearts, True)):
+            self.live += 1
             food_collision.play()
 
     def isCollided_with_portal(self, portals):
@@ -287,6 +298,7 @@ class Player(pygame.sprite.Sprite):
             if (item.rect.collidepoint(self.rect.centerx, self.rect.centery)):
                 enemy_collision.play()
                 self.invulnerable = True
+                self.live -= 1
                 return True
 
 class Enemy(pygame.sprite.Sprite):
@@ -416,7 +428,7 @@ class InvisibleWall(pygame.sprite.Sprite):
     def __init__(self, x, y, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('').convert_alpha()
+        self.image = pygame.image.load('wall.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -433,6 +445,22 @@ class Treasure(pygame.sprite.Sprite):
 
         super().__init__()
         self.image = pygame.image.load('foodA.png').convert_alpha()
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+class Heart(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width = 32, height = 32):
+
+        super().__init__()
+        self.image = pygame.image.load('images/features/heart.png').convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -573,15 +601,9 @@ class MiniPlayer (object):
         self.win_height = win_height
 
     def update(self, player_abs_x, player_abs_y):
-<<<<<<< HEAD
         mini_x = 150 / (64 * 50) * player_abs_x
         mini_y = 150 / (64 * 50) * player_abs_y
-        
-=======
-        mini_x = 150 / (32 * 50) * player_abs_x
-        mini_y = 150 / (32 * 50) * player_abs_y
 
->>>>>>> d3a373fbe4b7ce1f5ca0cfb3c634f9a8464774e8
         self.rect.x = self.win_width - 170 + mini_x
         self.rect.y = self.win_height - 170 + mini_y
 
@@ -603,7 +625,7 @@ class Fog(pygame.sprite.Sprite):
 # Initialize all objects relevant to the game.
 def create_instances():
     global current_level, running, player, player_group, miniMap, miniPlayer, miniWalls_group, fog_group
-    global walls_group, invisibleWalls_group, enemies_group, treasures_group, portal_group, traps_group, spikes_group
+    global walls_group, invisibleWalls_group, enemies_group, treasures_group, hearts_group, portal_group, traps_group, spikes_group
     global win_width, win_height
 
     current_level = 0
@@ -620,6 +642,7 @@ def create_instances():
     portal_group = pygame.sprite.Group()
     traps_group = pygame.sprite.Group()
     spikes_group = pygame.sprite.Group()
+    hearts_group = pygame.sprite.Group()
 
     fog_group = pygame.sprite.Group()
     fog_group.add(Fog())
@@ -665,6 +688,9 @@ def run_viewbox(player_x, player_y):
 
         for treasure in treasures_group:
             treasure.shift_world(dx, dy)
+        
+        for heart in hearts_group:
+            heart.shift_world(dx, dy)
 
         for portal in portal_group:
             portal.shift_world(dx, dy)
@@ -677,7 +703,7 @@ def run_viewbox(player_x, player_y):
 
 def define_maze():
     global levels
-        level_1 = [
+    level_1 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   T   XXXXXXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    E    XXXXXX",
@@ -697,7 +723,7 @@ def define_maze():
     "XX   XXXXXXXXXXXXXX     XXXXXXXXXXXXXXXX  U XXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XX   XXXP    C                   XXX    T      XXX",
+    "XX   XXXP    C    H              XXX    T      XXX",
     "XX   XXX          S              XXX           XXX",
     "XX   XXX       T                 XXX   XXXXX   XXX",
     "XX   XXX                         XXX   XXXXX   XXX",
@@ -924,6 +950,10 @@ def setup_maze(current_level):
             elif character == "T":
                 #Update treasure coordinates
                 treasures_group.add(Treasure(pos_x, pos_y))
+            
+            elif character == "H":
+                #Update treasure coordinates
+                hearts_group.add(Heart(pos_x, pos_y))
 
             elif character == "U":
                 #Update portal coordinates
@@ -943,6 +973,7 @@ def clear_maze():
     invisibleWalls_group.empty()
     enemies_group.empty()
     treasures_group.empty()
+    hearts_group.empty()
     traps_group.empty()
     spikes_group.empty()
     portal_group.empty()
@@ -970,7 +1001,7 @@ chefImageLists = loadImageListInDict('images/chef')
 ghostList = loadImageInList('images/ghost')
 portalList = loadImageInList('images/portal')
 spikeList = loadImageInList('images/spike')
-
+heartShape = pygame.image.load('images/features/heart_2.png')
 # Load musics & sound
 music = pygame.mixer.music.load(os.path.join('audios','Background_Music.mp3'))
 pygame.mixer.music.play(-1)
@@ -978,8 +1009,8 @@ food_collision = pygame.mixer.Sound(os.path.join('audios','Food_Collision.wav'))
 enemy_collision = pygame.mixer.Sound(os.path.join('audios','Enemy_Collision.wav'))
 portal_collision = pygame.mixer.Sound(os.path.join('audios','Portal_Collision.wav'))
 
-
-
+# Load font
+font1 = pygame.font.SysFont('comicsans',32,True,True)
 
 ################################################################################
 """
@@ -1008,7 +1039,7 @@ while running:
     # Update objects
 
     # player move -> check for collision with treasure / portal / enemy
-    player_group.update(walls_group, treasures_group, portal_group, traps_group, enemies_group, spikes_group)
+    player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
 
     # from player group update -> check if collide with portal to advance to next stage
     nextStage(player.isNextStage)
@@ -1034,6 +1065,7 @@ while running:
 
     portal_group.draw(window)
     treasures_group.draw(window)
+    hearts_group.draw(window)
     player_group.draw(window)
     enemies_group.draw(window)
     traps_group.draw(window)
@@ -1046,6 +1078,13 @@ while running:
     miniMap.draw(window)
     miniWalls_group.draw(window)
     miniPlayer.draw(window)
+
+    lifeLeftText = font1.render(' X '+ str(player.live),1,(255,250,250))
+    scoreText = font1.render('Score: ' + str(player.score), 1, (255,250,250))
+    window.blit(heartShape,(25,35))
+    window.blit(lifeLeftText,(50,40))
+    window.blit(scoreText, (30, 70))
+
 
     # Delay & Update Screen
     pygame.display.flip()

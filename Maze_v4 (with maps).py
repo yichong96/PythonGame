@@ -310,9 +310,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-    def update(self, collidable = pygame.sprite.Group()):
+    def update(self, collidable = pygame.sprite.Group(), collidable_2 = pygame.sprite.Group()):
         self.move()
         self.isCollided(collidable)
+        self.isCollided(collidable_2)
 
     def move(self):
         if self.direction == "up":
@@ -389,10 +390,10 @@ class Enemy(pygame.sprite.Sprite):
 
 class Wall(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, width = 32, height = 32):
+    def __init__(self, x, y, width = 64, height = 64):
 
         super().__init__()
-        self.image = pygame.image.load('wall_small.png').convert_alpha()
+        self.image = pygame.image.load('wall.png').convert_alpha()
 
         # self.image = pygame.Surface((width, height))
         # self.image.fill((255,100,180))
@@ -409,6 +410,22 @@ class Wall(pygame.sprite.Sprite):
     def draw(self, window):
 
         window.blit(self.image,(self.rect.x, self.rect.y))
+
+class InvisibleWall(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width = 64, height = 64):
+
+        super().__init__()
+        self.image = pygame.image.load('').convert_alpha()
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
 
 class Treasure(pygame.sprite.Sprite):
 
@@ -523,6 +540,8 @@ class MiniMap(object):
 
         self.bg = pygame.Surface((self.width - 20, self.height - 20))
         self.bg.fill((0,0,0))
+        self.bg1 = pygame.Surface((160, 160))
+        self.bg1.fill((0,0,0))
 
         self.rect.x = win_width - self.width
         self.rect.y = win_height - self.height
@@ -530,6 +549,7 @@ class MiniMap(object):
     def draw(self, window):
         window.blit(self.bg,(self.rect.x + 10, self.rect.y + 10))
         window.blit(self.image,(self.rect.x, self.rect.y))
+        window.blit(self.bg1,(self.rect.x + 15, self.rect.y + 15))
 
 class MiniWall(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -553,8 +573,8 @@ class MiniPlayer (object):
         self.win_height = win_height
 
     def update(self, player_abs_x, player_abs_y):
-        mini_x = 150 / (32 * 50) * player_abs_x
-        mini_y = 150 / (32 * 50) * player_abs_y
+        mini_x = 150 / (64 * 50) * player_abs_x
+        mini_y = 150 / (64 * 50) * player_abs_y
         
         self.rect.x = self.win_width - 170 + mini_x
         self.rect.y = self.win_height - 170 + mini_y
@@ -571,13 +591,13 @@ class Fog(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
     def update(self, player_x, player_y):
-        self.rect.centerx = player_x + 32
-        self.rect.centery = player_y + 32
+        self.rect.centerx = player_x + 16
+        self.rect.centery = player_y + 16
 
 # Initialize all objects relevant to the game.
 def create_instances():
     global current_level, running, player, player_group, miniMap, miniPlayer, miniWalls_group, fog_group
-    global walls_group, enemies_group, treasures_group, portal_group, traps_group, spikes_group
+    global walls_group, invisibleWalls_group, enemies_group, treasures_group, portal_group, traps_group, spikes_group
     global win_width, win_height
 
     current_level = 0
@@ -588,6 +608,7 @@ def create_instances():
     player_group.add(player)
 
     walls_group = pygame.sprite.Group()
+    invisibleWalls_group = pygame.sprite.Group()
     enemies_group = pygame.sprite.Group()
     treasures_group = pygame.sprite.Group()
     portal_group = pygame.sprite.Group()
@@ -628,6 +649,9 @@ def run_viewbox(player_x, player_y):
 
     if (dx != 0 or dy != 0):
         for wall in walls_group:
+            wall.shift_world(dx, dy)
+        
+        for wall in invisibleWalls_group:
             wall.shift_world(dx, dy)
 
         for enemy in enemies_group:
@@ -864,18 +888,23 @@ def define_maze():
     ]
 
     levels = [level_1, level_2, level_3, level_4]
+
 def setup_maze(current_level):
 
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
             character = levels[current_level][y][x]
-            pos_x = (x*32)
-            pos_y = (y*32)
+            pos_x = (x*64)
+            pos_y = (y*64)
 
             if character == "X":
                 #Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
                 miniWalls_group.add(MiniWall(win_width - 170 + (x * 3), win_height - 170 + (y * 3)))
+            
+            elif character == "I":
+                #Update wall coordinates
+                invisibleWalls_group.add(InvisibleWall(pos_x, pos_y))
 
             elif character == "P":
                 player.set_position(pos_x, pos_y)
@@ -905,6 +934,7 @@ def setup_maze(current_level):
 # Empty the maze
 def clear_maze():
     walls_group.empty()
+    invisibleWalls_group.empty()
     enemies_group.empty()
     treasures_group.empty()
     traps_group.empty()
@@ -973,7 +1003,7 @@ while running:
     nextStage(player.isNextStage)
     
     portal_group.update()
-    enemies_group.update(walls_group)
+    enemies_group.update(walls_group, invisibleWalls_group)
     traps_group.update(player.rect.centerx, player.rect.centery)
     spikes_group.update()
 

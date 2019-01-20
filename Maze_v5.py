@@ -2,6 +2,8 @@ import pygame, os, random, math, sys, testWin
 
 # Set up window
 #####################################################################
+
+
 pygame.init()
 
  # size of the game window
@@ -632,7 +634,7 @@ def create_instances():
     global win_width, win_height
 
     current_level = 0
-    running = True
+    #running = True
 
     player = Player(imageLists = ratImageLists, ghostImageList = ghostList)
     player_group = pygame.sprite.Group()
@@ -1034,129 +1036,137 @@ font1 = pygame.font.SysFont('comicsans',32,True,True)
 
 # Initialise the maze
 
-loading = True;
-isGameOver = False;
-create_instances()
-define_maze()
-setup_maze(current_level)
+
+def main():
+    loading = True;
+    isGameOver = False;
+    create_instances()
+    define_maze()
+    setup_maze(current_level)
+
+    running = True
 
 #fading
-i = 0
-window.fill((0,0,0))
+    i = 0
+    window.fill((0,0,0))
 
-while running:
-    for event in pygame.event.get():
-        if(event.type == pygame.QUIT) or \
-        (event.type == pygame.KEYDOWN \
-         and (event.key == pygame.K_ESCAPE or event.key == pygame.K_q )):
-         running = False
+    while running:
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT) or \
+            (event.type == pygame.KEYDOWN \
+             and (event.key == pygame.K_ESCAPE or event.key == pygame.K_q )):
+             running = False
 
-    # Update objects
+        # Update objects
 
-    # player move -> check for collision with treasure / portal / enemy
-    if loading:
-        #print("hello1")
-        #window.blit(loadingScreen, (0,0))
-        breakLoop = True
-        while breakLoop:
-            window.blit(loadingScreen, (0,0))
-            pygame.display.flip()
-            for event in pygame.event.get():
-                print(event.type)
-                if(event.type == pygame.KEYDOWN):
-                    breakLoop = False
-                    #loading = False
-                    loading = False
-
-
-    #gameOverWindow = GameOverWindow(1024,768,FONT, "highscore.txt", 200, 4)
-    elif isGameOver:
-        #print(__file__)
-        gameOverWindow = testWin.GameOverWindow("GAME OVER", win_width, win_height, FONT, "highscore.txt", player.score, current_level + 1)
-        gameOverWindow.run()
-
-    else:
-        if (not player.isNextStage):
-            player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
-
-            # from player group update -> check if collide with portal to advance to next stage
-
-            portal_group.update()
-            enemies_group.update(walls_group, invisibleWalls_group)
-            traps_group.update(player.rect.centerx, player.rect.centery)
-            spikes_group.update()
-
-            fog_group.update(player.rect.x, player.rect.y)
-            miniPlayer.update(player.abs_x, player.abs_y)
-
-            # Update view camera
-            run_viewbox(player.rect.x, player.rect.y)
-            # Draw
-
-            # Fill background with black color
-            window.fill((0,0,0))
-
-            for wall in walls_group:
-                if (wall.rect.x < win_width) and (wall.rect.y < win_height):
-                    wall.draw(window)
-
-        if player.isNextStage != True:
-            player_group.draw(window)
-
-        portal_group.draw(window)
-        treasures_group.draw(window)
-        hearts_group.draw(window)
-        enemies_group.draw(window)
-        traps_group.draw(window)
-        spikes_group.draw(window)
-
-        # Implement fog from level 2 onwards
-        if current_level >= 1:
-            fog_group.draw(window)
-
-        miniMap.draw(window)
-        miniWalls_group.draw(window)
-        miniPlayer.draw(window)
-
-        lifeLeftText = font1.render(' X '+ str(player.live),1,(255,250,250))
-        scoreText = font1.render('Score: ' + str(player.score), 1, (255,250,250))
-        window.blit(heartShape,(25,35))
-        window.blit(lifeLeftText,(50,40))
-        window.blit(scoreText, (30, 70))
-
-        # fading animation
-        if player.isNextStage == True:
-            fade.set_alpha(i)
-            window.blit(fade, (0,0))
-            pygame.display.update()
-            pygame.time.delay(2)
-            i += 15
-            if i == 255:
-                i = 0
-                nextStage(player.isNextStage)
-                continue
-
-        if player.live == 0:
-            isGameOver = True;
-
-    # Delay & Update Screen
-    pygame.display.flip()
-    clock.tick_busy_loop(fps)
+        # player move -> check for collision with treasure / portal / enemy
+        if loading:
+            #print("hello1")
+            #window.blit(loadingScreen, (0,0))
+            breakLoop = True
+            while breakLoop:
+                window.blit(loadingScreen, (0,0))
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    print(event.type)
+                    if(event.type == pygame.KEYDOWN):
+                        breakLoop = False
+                        #loading = False
+                        loading = False
 
 
-    # test to Restart script once the player clicks try again
-    """
-    if i == 5:
-        path = os.path.dirname(os.path.abspath(__file__))
-        path = path + "/helloWorld.py"
-        print(sys.executable)
-        print(__file__)
-        print(path)
-        print(sys.argv)
-        os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
-    i += 1
-    print(i)
-    """
+        #gameOverWindow = GameOverWindow(1024,768,FONT, "highscore.txt", 200, 4)
+        elif isGameOver:
+            #print(__file__)
+            gameOverWindow = testWin.GameOverWindow("GAME OVER", win_width, win_height, FONT, "highscore.txt", player.score, current_level + 1)
+            to_cont = gameOverWindow.run()
+            if to_cont:
+                main()
+
+        else:
+            if (not player.isNextStage):
+                player_group.update(walls_group, treasures_group, hearts_group, portal_group, traps_group, enemies_group, spikes_group)
+
+                # from player group update -> check if collide with portal to advance to next stage
+
+                portal_group.update()
+                enemies_group.update(walls_group, invisibleWalls_group)
+                traps_group.update(player.rect.centerx, player.rect.centery)
+                spikes_group.update()
+
+                fog_group.update(player.rect.x, player.rect.y)
+                miniPlayer.update(player.abs_x, player.abs_y)
+
+                # Update view camera
+                run_viewbox(player.rect.x, player.rect.y)
+                # Draw
+
+                # Fill background with black color
+                window.fill((0,0,0))
+
+                for wall in walls_group:
+                    if (wall.rect.x < win_width) and (wall.rect.y < win_height):
+                        wall.draw(window)
+
+            if player.isNextStage != True:
+                player_group.draw(window)
+
+            portal_group.draw(window)
+            treasures_group.draw(window)
+            hearts_group.draw(window)
+            enemies_group.draw(window)
+            traps_group.draw(window)
+            spikes_group.draw(window)
+
+            # Implement fog from level 2 onwards
+            if current_level >= 1:
+                fog_group.draw(window)
+
+            miniMap.draw(window)
+            miniWalls_group.draw(window)
+            miniPlayer.draw(window)
+
+            lifeLeftText = font1.render(' X '+ str(player.live),1,(255,250,250))
+            scoreText = font1.render('Score: ' + str(player.score), 1, (255,250,250))
+            window.blit(heartShape,(25,35))
+            window.blit(lifeLeftText,(50,40))
+            window.blit(scoreText, (30, 70))
+
+            # fading animation
+            if player.isNextStage == True:
+                fade.set_alpha(i)
+                window.blit(fade, (0,0))
+                pygame.display.update()
+                pygame.time.delay(2)
+                i += 15
+                if i == 255:
+                    i = 0
+                    nextStage(player.isNextStage)
+                    continue
+
+            if player.live == 0:
+                isGameOver = True;
+
+        # Delay & Update Screen
+        pygame.display.flip()
+        clock.tick_busy_loop(fps)
 
 
-pygame.quit()
+        # test to Restart script once the player clicks try again
+        """
+        if i == 5:
+            path = os.path.dirname(os.path.abspath(__file__))
+            path = path + "/helloWorld.py"
+            print(sys.executable)
+            print(__file__)
+            print(path)
+            print(sys.argv)
+            os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
+        i += 1
+        print(i)
+        """
+
+
+    pygame.quit()
+
+main()

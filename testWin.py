@@ -5,22 +5,11 @@ import os
 
 
 # File I/O
-HS_FILE = "highscore.txt"
-SCORE = 100
-FONT = 'freesandsbold.ttf'
-def load_data():
-    # load high score
-    dir = path.dirname(__file__)
-    print(dir)
-    print("path " + path.join(dir,HS_FILE))
-    with open(path.join(dir, HS_FILE), 'w') as f:    # if file doesnt exist it will create the file
-        try:
-            highscore = int(f.read())
-        except:
-            highscore = 0
+
 
 #load_data()
 pygame.init()
+FONT = "freesandsbold.ttf"
 
 
 
@@ -332,8 +321,7 @@ class GameOverWindow:
                         self.write_to_file(self.leaderBoardFile, append_line)
 
                     elif self.myTryAgainRect.collidepoint(pygame.mouse.get_pos()):
-                        os.execv(sys.executable, [sys.executable, "Maze_v5.py"] + sys.argv)
-
+                        return True
 
             if textinput.update(events):
                 my_text = textinput.get_text()

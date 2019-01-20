@@ -989,8 +989,11 @@ def nextStage(isNextStage):
     if isNextStage:
         current_level += 1
         print(current_level)
-        if current_level == 4:
-            current_level = 0
+        if current_level == 5:
+            #gameOverWindow = GameOverWindow(1024,768,FONT, "highscore.txt", 200, 4)
+            gameOverWindow = testWin.gameOverWindow("CONGRATULATIONS YOU WON !", win_width,
+            win_height, FONT, "highscore.txt", player.score, current_level)
+            gameOverWindow.run()
         clear_maze()
         setup_maze(current_level)
 
@@ -1069,7 +1072,7 @@ while running:
     #gameOverWindow = GameOverWindow(1024,768,FONT, "highscore.txt", 200, 4)
     elif isGameOver:
         #print(__file__)
-        gameOverWindow = testWin.GameOverWindow(win_width, win_height, FONT, "highscore.txt", player.score, current_level + 1)
+        gameOverWindow = testWin.GameOverWindow("GAME OVER", win_width, win_height, FONT, "highscore.txt", player.score, current_level + 1)
         gameOverWindow.run()
 
     else:

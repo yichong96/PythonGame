@@ -44,7 +44,10 @@ screen.fill((225,225,225))
 
 class GameOverWindow:
 
-    def __init__(self, win_width, win_height, FONT, leaderboardFile, score, level):
+    def __init__(self, message, win_width, win_height, FONT, leaderboardFile, score, level):
+
+        self.message = message
+
         self.win_width = win_width
 
         self.win_height = win_height
@@ -117,7 +120,7 @@ class GameOverWindow:
 
     def gameOverRect(self, win_width, win_height, font = FONT):
         myfont = pygame.font.SysFont(FONT, 84)
-        gameOverSurface = myfont.render("GAME OVER", False, (150,150,150))
+        gameOverSurface = myfont.render(self.message, False, (150,150,150))
         gameOverRect = gameOverSurface.get_rect()
 
         gameOverRect.centerx = win_width / 2

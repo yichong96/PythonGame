@@ -52,6 +52,10 @@ class GameOverWindow:
 
         (self.myScoreSurface, self.myScoreRect)= self.myScoreRect(win_width, win_height, self.gameOverRect, self.font)
 
+
+        (self.levelRectSurface, self.levelRect) = self.makeLevelRect(win_width, win_height, self.myScoreRect, self.font)
+
+
         (self.myUserSurface, self.myUserRect) = self.myUserRect(self.myScoreRect)
 
         self.enterUserRect = pygame.Rect((self.myUserRect.right + 30, self.myUserRect.top), (200, 0))
@@ -126,6 +130,17 @@ class GameOverWindow:
         myScoreRect.top = gameOverRect.top + 100
 
         return (myScoreSurface, myScoreRect)
+
+
+    def makeLevelRect(self, win_width, win_height, myScoreRect, font = FONT):
+        myfont = pygame.font.SysFont(FONT, 50)
+        myLevelSurface = myfont.render("Stage " + str(self.level), False, (150,150,150))
+        myLevelRect = myLevelSurface.get_rect()
+
+        myLevelRect.left = myScoreRect.right + 50
+        myLevelRect.top = myScoreRect.top
+
+        return (myLevelSurface, myLevelRect)
 
     def myUserRect(self ,myScoreRect):
         myfont = pygame.font.SysFont(FONT, 50)
@@ -283,6 +298,7 @@ class GameOverWindow:
         pygame.draw.rect(self.screen, (0,0,255), self.leaderBoardContainer, 2)
         self.screen.blit(self.myScoreSurface, self.myScoreRect)
         self.screen.blit(self.myUserSurface, self.myUserRect)
+        self.screen.blit(self.levelRectSurface, self.levelRect)
         self.screen.blit(self.leaderBoardSurface, self.leaderBoardRect)
         self.showLeaderBoard(self.leaderBoardContainer, [10,20,30,40,50])
 
@@ -331,7 +347,7 @@ class GameOverWindow:
             self.screen.blit(textinput.get_surface(), (self.enterUserRect.left + 5, self.enterUserRect.top + 5))
             pygame.display.update()
 
-#gameOverWindow = GameOverWindow(1024,768,FONT, "highscore.txt", 200, 4)
+#gameOverWindow = GameOverWindow("GAME OVER", 1024,768,FONT, "highscore.txt", 200, 4)
 #gameOverWindow.run()
 
 

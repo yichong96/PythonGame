@@ -1,5 +1,7 @@
 # PythonGame done using turtles module 
 
+Run MazeV6.py
+
 Objective: Help Remy the rat navigate through the maze and find his “friends” while avoiding Chef Skinner from finding Remy. 
 
 Level 1: The first level will be simple with no enemies and traps. The first level aims to get players familiar with the keyboard and mouse interactions of the game. 
@@ -10,3 +12,4 @@ Level 3: The third level features both enemies which can move around the maze an
 
 The player loses if Remy steps on a trap or if one of Chef Skinner’s men catches Remy. 
 The player wins if Remy is able to successfully gather all of his friends while avoiding Chef Skinner and the traps.
+

@@ -1,4 +1,5 @@
-# PythonGame done using turtles module 
+# A little Maze Game created for NUS CBLC Club Boothday
+# Written in Python with pygame
 
 Run MazeV5.py
 

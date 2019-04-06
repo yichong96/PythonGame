@@ -10,14 +10,6 @@ import os
 #load_data()
 pygame.init()
 FONT = "freesandsbold.ttf"
-
-
-
-
-
-
-
-
     #def update(self):
     #    self.index += 1
     #    if self.index >= len(self.images):
@@ -95,7 +87,7 @@ class GameOverWindow:
 
         def __init__(self, win_width, win_height):
             pygame.sprite.Sprite.__init__(self)
-            self.image = pygame.image.load('fatRat1_burned.png')
+            self.image = pygame.image.load('images/others/fatRat1_burned.png')
             """
             self.images = []
             self.images.append(load_image('Rat4_1_150x150.png'))

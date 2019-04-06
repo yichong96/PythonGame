@@ -1,17 +1,2 @@
-anand, 150, 4
-bhojan, 100, 2
-xk, 99,   4
-lj,  20,  1
-zl,  11, 3
-mc,  101, 4
-ramchand, 200, 3
-adi, 200, 4
-tuckchoy, 200, 4
-anand bhojan, 200, 4
-sim mong cheng, 200, 4
-holamola, 100, 1
-Hallowww, 400, 3
-Halloww11, 400, 3
-1212, 1800, 2
-124xdrd, 600, 3
-
+hxkhahaha, 0, 1
+OH NO , 1500, 4

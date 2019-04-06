@@ -100,7 +100,7 @@ class Player(pygame.sprite.Sprite):
         self.invulnerable = False
         self.invulnerable_count = 0
 
-        self.live = 1
+        self.live = 10
         self.score = 0
 
     def set_position(self, x, y):
@@ -1069,7 +1069,7 @@ def main():
                 pygame.display.flip()
                 for event in pygame.event.get():
                     print(event.type)
-                    if(event.type == pygame.KEYDOWN):
+                    if(event.type == pygame.KEYDOWN and event.key == pygame.K_s):
                         breakLoop = False
                         #loading = False
                         loading = False
@@ -1153,18 +1153,18 @@ def main():
 
 
         # test to Restart script once the player clicks try again
-        """
-        if i == 5:
-            path = os.path.dirname(os.path.abspath(__file__))
-            path = path + "/helloWorld.py"
-            print(sys.executable)
-            print(__file__)
-            print(path)
-            print(sys.argv)
-            os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
-        i += 1
-        print(i)
-        """
+
+##        if i == 5:
+##            path = os.path.dirname(os.path.abspath(__file__))
+##            path = path + "/helloWorld.py"
+##            print(sys.executable)
+##            print(__file__)
+##            print(path)
+##            print(sys.argv)
+##            os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
+##        i += 1
+##        print(i)
+
 
 
     pygame.quit()
